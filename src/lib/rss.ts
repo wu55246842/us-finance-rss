@@ -17,7 +17,7 @@ export const REVALIDATE_TIME = 300;
 export async function fetchFeed(source: Source): Promise<Article[]> {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout
 
         const response = await fetch(source.url, {
             next: { revalidate: REVALIDATE_TIME },
