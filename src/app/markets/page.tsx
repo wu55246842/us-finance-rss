@@ -13,10 +13,12 @@ export default async function MarketsPage() {
 
     return (
         <div className="space-y-8">
-            <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">US Stock Markets</h1>
-                <p className="text-muted-foreground">
-                    Latest updates from Yahoo Finance, CNBC, and MarketWatch.
+            <div className="space-y-4 py-8 text-center md:text-left">
+                <h1 className="text-3xl font-bold tracking-tight sm:text-4xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-blue-400 dark:to-cyan-300">
+                    US Stock Markets
+                </h1>
+                <p className="text-lg text-muted-foreground max-w-2xl">
+                    Real-time coverage of major indices and individual stock movements from top financial sources.
                 </p>
             </div>
 

@@ -20,10 +20,12 @@ export default async function MacroPage() {
 
     return (
         <div className="space-y-8">
-            <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Macro Economy & Policy</h1>
-                <p className="text-muted-foreground">
-                    Economic data, Federal Reserve updates, and government reports.
+            <div className="space-y-4 py-8 text-center md:text-left">
+                <h1 className="text-3xl font-bold tracking-tight sm:text-4xl bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500 dark:from-purple-400 dark:to-pink-300">
+                    Macro Economy & Policy
+                </h1>
+                <p className="text-lg text-muted-foreground max-w-2xl">
+                    Deep dive into economic indicators, Federal Reserve decisions, and government data releases.
                 </p>
             </div>
 
