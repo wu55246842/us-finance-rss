@@ -19,7 +19,7 @@ export default async function MacroPage() {
     );
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 px-4 md:px-6 max-w-7xl mx-auto">
             <div className="space-y-4 py-8 text-center md:text-left">
                 <h1 className="text-3xl font-bold tracking-tight sm:text-4xl bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500 dark:from-purple-400 dark:to-pink-300">
                     Macro Economy & Policy

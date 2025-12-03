@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function SourcesPage() {
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 px-4 md:px-6 max-w-7xl mx-auto">
             <div className="space-y-4 py-8 text-center md:text-left">
                 <h1 className="text-3xl font-bold tracking-tight sm:text-4xl bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-300">
                     Data Sources

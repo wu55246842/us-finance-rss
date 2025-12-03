@@ -7,11 +7,13 @@ import { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
+import SearchCommand from '@/components/openstock/SearchCommand';
 
 const NAV_ITEMS = [
     { name: 'Home', href: '/' },
     { name: 'Markets', href: '/markets' },
     { name: 'Macro', href: '/macro' },
+    { name: 'Stocks', href: '/stocks/overview' },
     { name: 'Sources', href: '/sources' },
 ];
 
@@ -40,14 +42,11 @@ export function Header() {
             <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6 max-w-7xl">
                 <div className="flex items-center gap-2">
                     <Link href="/" className="flex items-center gap-2 group">
-                        <div className="relative h-10 w-10 overflow-hidden rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500 p-0.5 transition-transform group-hover:scale-105">
-                            <div className="flex h-full w-full items-center justify-center rounded-[7px] bg-background">
-                                <img src="/logo.svg" alt="US Finance RSS" className="h-8 w-auto" />
+                        <div className="relative overflow-hidden rounded-lg  transition-transform group-hover:scale-105">
+                            <div className="flex h-full w-full items-center justify-center  bg-background">
+                                <img src="/logo.svg" alt="US Finance RSS" className="h-16 w-auto dark:invert" />
                             </div>
                         </div>
-                        <span className="hidden sm:inline-block font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                            US Markets Hub
-                        </span>
                     </Link>
                 </div>
 
@@ -72,7 +71,8 @@ export function Header() {
                             )}
                         </Link>
                     ))}
-                    <div className="ml-2 pl-2 border-l border-border/50">
+                    <div className="ml-2 pl-2 border-l border-border/50 flex items-center gap-4">
+                        <SearchCommand renderAs="text" label="Search stocks..." initialStocks={[]} />
                         <ThemeToggle />
                     </div>
                 </nav>
@@ -114,6 +114,9 @@ export function Header() {
                                 </Link>
                             ))}
                         </nav>
+                        <div className="p-4 border-t border-border">
+                            <SearchCommand renderAs="button" label="Search stocks..." initialStocks={[]} />
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

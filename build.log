@@ -1,0 +1,74 @@
+
+> us-finance-rss@0.1.0 build
+> next build
+
+ ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\lwu35\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\package-lock.json
+
+   ▲ Next.js 16.0.6 (Turbopack)
+
+   Creating an optimized production build ...
+Error: Can't resolve 'tailwindcss-animate' in 'C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\src\app'
+    [2m[at finishWithoutResolve (C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\node_modules\enhanced-resolve\lib\Resolver.js:565:18)][0m
+    [2m[at C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\node_modules\enhanced-resolve\lib\Resolver.js:657:14][0m
+    [2m[at C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\node_modules\enhanced-resolve\lib\Resolver.js:718:5][0m
+    [2m[at eval (eval at create (C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)][0m
+    [2m[at C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\node_modules\enhanced-resolve\lib\Resolver.js:718:5][0m
+    [2m[at eval (eval at create (C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:27:1)][0m
+    [2m[at C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\node_modules\enhanced-resolve\lib\DescriptionFilePlugin.js:89:43][0m
+    [2m[at C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\node_modules\enhanced-resolve\lib\Resolver.js:718:5][0m
+    [2m[at eval (eval at create (C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)][0m
+    [2m[at C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\node_modules\enhanced-resolve\lib\Resolver.js:718:5][0m {
+  details: "resolve 'tailwindcss-animate' in 'C:\\Users\\lwu35\\.gemini\\antigravity\\scratch\\us-finance-rss\\src\\app'\n" +
+    '  Parsed request is a module\n' +
+    '  using description file: C:\\Users\\lwu35\\.gemini\\antigravity\\scratch\\us-finance-rss\\package.json (relative path: ./src/app)\n' +
+    '    resolve as module\n' +
+    "      C:\\Users\\lwu35\\.gemini\\antigravity\\scratch\\us-finance-rss\\src\\app\\node_modules doesn't exist or is not a directory\n" +
+    "      C:\\Users\\lwu35\\.gemini\\antigravity\\scratch\\us-finance-rss\\src\\node_modules doesn't exist or is not a directory\n" +
+    '      looking for modules in C:\\Users\\lwu35\\.gemini\\antigravity\\scratch\\us-finance-rss\\node_modules\n' +
+    '        single file module\n' +
+    '          using description file: C:\\Users\\lwu35\\.gemini\\antigravity\\scratch\\us-finance-rss\\package.json (relative path: ./node_modules/tailwindcss-animate)\n' +
+    '            no extension\n' +
+    "              C:\\Users\\lwu35\\.gemini\\antigravity\\scratch\\us-finance-rss\\node_modules\\tailwindcss-animate doesn't exist\n" +
+    '            .js\n' +
+    "              C:\\Users\\lwu35\\.gemini\\antigravity\\scratch\\us-finance-rss\\node_modules\\tailwindcss-animate.js doesn't exist\n" +
+    '            .json\n' +
+    "              C:\\Users\\lwu35\\.gemini\\antigravity\\scratch\\us-finance-rss\\node_modules\\tailwindcss-animate.json doesn't exist\n" +
+    '            .node\n' +
+    "              C:\\Users\\lwu35\\.gemini\\antigravity\\scratch\\us-finance-rss\\node_modules\\tailwindcss-animate.node doesn't exist\n" +
+    '            .ts\n' +
+    "              C:\\Users\\lwu35\\.gemini\\antigravity\\scratch\\us-finance-rss\\node_modules\\tailwindcss-animate.ts doesn't exist\n" +
+    "        C:\\Users\\lwu35\\.gemini\\antigravity\\scratch\\us-finance-rss\\node_modules\\tailwindcss-animate doesn't exist\n" +
+    "      C:\\Users\\lwu35\\.gemini\\antigravity\\scratch\\node_modules doesn't exist or is not a directory\n" +
+    "      C:\\Users\\lwu35\\.gemini\\antigravity\\node_modules doesn't exist or is not a directory\n" +
+    "      C:\\Users\\lwu35\\.gemini\\node_modules doesn't exist or is not a directory\n" +
+    "      C:\\Users\\lwu35\\node_modules doesn't exist or is not a directory\n" +
+    "      C:\\Users\\node_modules doesn't exist or is not a directory\n" +
+    "      C:\\node_modules doesn't exist or is not a directory"
+}
+
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+./.gemini/antigravity/scratch/us-finance-rss/src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: tailwindcss: C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\src\app\globals.css:1:1: Can't resolve 'tailwindcss-animate' in 'C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\src\app'
+    at Input.error (.gemini/antigravity/scratch/us-finance-rss/node_modules/postcss/lib/input.js:135:16) [C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\.next\build\chunks\0fcbd_7ec64bed._.js:4651:22]
+    at Root.error (.gemini/antigravity/scratch/us-finance-rss/node_modules/postcss/lib/node.js:146:32) [C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\.next\build\chunks\0fcbd_7ec64bed._.js:928:38]
+    [at Object.Once (C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\node_modules\@tailwindcss\postcss\dist\index.js:10:6912)]
+    at async LazyResult.runAsync (.gemini/antigravity/scratch/us-finance-rss/node_modules/postcss/lib/lazy-result.js:293:11) [C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\.next\build\chunks\0fcbd_7ec64bed._.js:6224:21]
+    at async transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:34) [C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\.next\build\chunks\[root-of-the-server]__a40ba209._.js:146:36]
+    at async run (turbopack:///[turbopack-node]/ipc/evaluate.ts:92:23) [C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\.next\build\chunks\[root-of-the-server]__98fa4674._.js:451:31]
+
+Import trace:
+  Client Component Browser:
+    ./.gemini/antigravity/scratch/us-finance-rss/src/app/globals.css [Client Component Browser]
+    ./.gemini/antigravity/scratch/us-finance-rss/src/app/layout.tsx [Server Component]
+
+
+    at async transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:34) [C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\.next\build\chunks\[root-of-the-server]__a40ba209._.js:146:36])
+    at async run (turbopack:///[turbopack-node]/ipc/evaluate.ts:92:23) [C:\Users\lwu35\.gemini\antigravity\scratch\us-finance-rss\.next\build\chunks\[root-of-the-server]__98fa4674._.js:451:31])

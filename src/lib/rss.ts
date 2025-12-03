@@ -2,10 +2,6 @@ import Parser from 'rss-parser';
 import { Article, Source, Category } from './types';
 import { RSS_SOURCES } from './sources';
 
-// Bypass SSL certificate validation in development
-if (process.env.NODE_ENV === 'development') {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-}
 
 const parser = new Parser();
 
@@ -21,8 +17,8 @@ export async function fetchFeed(source: Source): Promise<Article[]> {
             next: { revalidate: REVALIDATE_TIME },
             signal: controller.signal,
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
             }
         });
 
@@ -37,7 +33,7 @@ export async function fetchFeed(source: Source): Promise<Article[]> {
         const feed = await parser.parseString(xml);
 
         return feed.items.map((item) => ({
-            id: item.guid || item.link || Math.random().toString(36).substring(7),
+            id: `${source.id}-${item.guid || item.link || Math.random().toString(36).substring(7)}`,
             title: item.title || 'No Title',
             link: item.link || '',
             sourceId: source.id,

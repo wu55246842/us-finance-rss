@@ -1,67 +1,58 @@
-# US Markets & Macro Hub
+# US Finance & Stock Market RSS Aggregator
 
-A real-time RSS aggregator for US stock market news, individual stock updates, macro economic data, and Federal Reserve policy.
+A modern, responsive web application aggregating financial news and stock market data from various sources.
 
 ## Features
 
-- **Real-time Aggregation**: Fetches news from Yahoo Finance, CNBC, MarketWatch, Investing.com, and official government sources (BEA, BLS, Fed).
-- **Categorized Views**:
-  - **Markets**: US Stock Market news (S&P 500, AAPL, etc.).
-  - **Macro**: Economic data and policy updates.
-- **Search & Filter**: Client-side search and filtering by category.
-- **Responsive Design**: Mobile-first layout built with Tailwind CSS.
-- **Performance**: Server-side fetching with ISR (Incremental Static Regeneration) for optimal performance and SEO.
+- **RSS Aggregation**: Real-time news from CNBC, MarketWatch, WSJ, and more.
+- **Market Overview**: Interactive charts and heatmaps powered by TradingView.
+- **Stock Search**: Global stock search using Finnhub API.
+- **Stock Details**: Comprehensive stock data, charts, and company profiles.
+- **Modern UI**: Fintech-inspired design with Dark Mode support.
 
 ## Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS v4
-- **RSS Parsing**: `rss-parser`
-- **Icons**: `lucide-react`
-- **Date Formatting**: `date-fns`
+- **Styling**: Tailwind CSS v4, Framer Motion
+- **Data**: RSS Parser, Finnhub API
+- **Components**: shadcn/ui (adapted), Lucide React
 
 ## Getting Started
 
-### Prerequisites
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/your-username/us-finance-rss.git
+    cd us-finance-rss
+    ```
 
-- Node.js 18+
-- npm
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-### Installation
+3.  **Configure Environment Variables**:
+    Create a `.env.local` file in the root directory and add your Finnhub API key:
+    ```env
+    NEXT_PUBLIC_FINNHUB_API_KEY=your_finnhub_api_key_here
+    FINNHUB_API_KEY=your_finnhub_api_key_here
+    ```
 
-1. Clone the repository (if applicable) or navigate to the project directory.
-2. Install dependencies:
+4.  **Run the development server**:
+    ```bash
+    npm run dev
+    ```
 
-```bash
-npm install
-```
+5.  Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-### Local Development
+## License & Credits
 
-Run the development server:
+This project is licensed under the **AGPL-3.0 License**.
 
-```bash
-npm run dev
-```
+### OpenStock Integration
+This project incorporates features and code from [OpenStock](https://github.com/Open-Dev-Society/OpenStock), which is licensed under AGPL-3.0.
+- **Stock Search & Details**: Adapted from OpenStock's implementation.
+- **TradingView Widgets**: Integrated from OpenStock's component library.
+- **UI Components**: Selected components adapted from OpenStock (shadcn/ui based).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-### Deployment
-
-This project is optimized for deployment on **Vercel**.
-
-1. Push the code to a GitHub repository.
-2. Import the project in Vercel.
-3. The default settings (Next.js preset) will work automatically.
-4. Deploy!
-
-## Project Structure
-
-- `src/app`: App Router pages and layouts.
-- `src/components`: Reusable UI components.
-- `src/lib`: Utility functions, types, and RSS configuration.
-
-## License
-
-MIT
+We thank the OpenStock contributors for their open-source work.

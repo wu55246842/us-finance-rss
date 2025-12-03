@@ -33,11 +33,11 @@ export const RSS_SOURCES: Source[] = [
         description: 'Top stories from MarketWatch.',
     },
     {
-        id: 'mw-economy',
-        name: 'MarketWatch Economy',
-        url: 'https://www.marketwatch.com/rss/economy-politics',
+        id: 'cnbc-economy',
+        name: 'CNBC Economy',
+        url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=20910258',
         category: 'macro',
-        description: 'Economy and politics news from MarketWatch.',
+        description: 'Economy news from CNBC.',
     },
     // Investing.com
     {

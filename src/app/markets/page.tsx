@@ -12,8 +12,8 @@ export default async function MarketsPage() {
     const articles = await getFeedsByCategory('markets');
 
     return (
-        <div className="space-y-8">
-            <div className="space-y-4 py-8 text-center md:text-left">
+        <div className="space-y-8 px-4 md:px-6 max-w-7xl mx-auto">
+            <div className="space-y-4 py-8  text-center md:text-left">
                 <h1 className="text-3xl font-bold tracking-tight sm:text-4xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-blue-400 dark:to-cyan-300">
                     US Stock Markets
                 </h1>
