@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+// Force Vercel rebuild: 2025-12-03
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/Header';
