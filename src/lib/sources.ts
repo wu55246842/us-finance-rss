@@ -24,13 +24,12 @@ export const RSS_SOURCES: Source[] = [
         category: 'markets',
         description: 'Latest market news from CNBC.',
     },
-    // MarketWatch
     {
-        id: 'mw-top',
-        name: 'MarketWatch Top Stories',
-        url: 'https://www.marketwatch.com/rss/topstories',
+        id: 'cnbc-top',
+        name: 'CNBC Top Stories',
+        url: 'https://www.cnbc.com/id/100003114/device/rss/rss.html',
         category: 'markets',
-        description: 'Top stories from MarketWatch.',
+        description: 'Top financial stories from CNBC.',
     },
     {
         id: 'cnbc-economy',
