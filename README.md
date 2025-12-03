@@ -56,3 +56,5 @@ This project incorporates features and code from [OpenStock](https://github.com/
 - **UI Components**: Selected components adapted from OpenStock (shadcn/ui based).
 
 We thank the OpenStock contributors for their open-source work.
+
+<!-- Trigger Vercel Deploy: 2025-12-03 17:54:31 -->
