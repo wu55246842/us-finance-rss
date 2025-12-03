@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# US Markets & Macro Hub
+
+A real-time RSS aggregator for US stock market news, individual stock updates, macro economic data, and Federal Reserve policy.
+
+## Features
+
+- **Real-time Aggregation**: Fetches news from Yahoo Finance, CNBC, MarketWatch, Investing.com, and official government sources (BEA, BLS, Fed).
+- **Categorized Views**:
+  - **Markets**: US Stock Market news (S&P 500, AAPL, etc.).
+  - **Macro**: Economic data and policy updates.
+- **Search & Filter**: Client-side search and filtering by category.
+- **Responsive Design**: Mobile-first layout built with Tailwind CSS.
+- **Performance**: Server-side fetching with ISR (Incremental Static Regeneration) for optimal performance and SEO.
+
+## Tech Stack
+
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4
+- **RSS Parsing**: `rss-parser`
+- **Icons**: `lucide-react`
+- **Date Formatting**: `date-fns`
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm
+
+### Installation
+
+1. Clone the repository (if applicable) or navigate to the project directory.
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+### Local Development
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project is optimized for deployment on **Vercel**.
 
-## Learn More
+1. Push the code to a GitHub repository.
+2. Import the project in Vercel.
+3. The default settings (Next.js preset) will work automatically.
+4. Deploy!
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `src/app`: App Router pages and layouts.
+- `src/components`: Reusable UI components.
+- `src/lib`: Utility functions, types, and RSS configuration.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
