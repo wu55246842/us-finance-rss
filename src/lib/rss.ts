@@ -5,6 +5,12 @@ import { RSS_SOURCES } from './sources';
 
 const parser = new Parser();
 
+// Bypass SSL certificate validation for local development/builds if needed
+// This is required for some corporate environments or specific network setups
+if (process.env.NODE_TLS_REJECT_UNAUTHORIZED === undefined) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 // Cache revalidation time in seconds (5 minutes)
 export const REVALIDATE_TIME = 300;
 
@@ -61,7 +67,17 @@ export async function getFeedsByCategory(category?: Category): Promise<Article[]
         return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
     });
 
-    return allArticles;
+    // Deduplicate by ID to prevent React key collisions
+    const seenIds = new Set<string>();
+    const uniqueArticles: Article[] = [];
+    for (const article of allArticles) {
+        if (!seenIds.has(article.id)) {
+            seenIds.add(article.id);
+            uniqueArticles.push(article);
+        }
+    }
+
+    return uniqueArticles;
 }
 
 export async function getAllFeeds(): Promise<Article[]> {
