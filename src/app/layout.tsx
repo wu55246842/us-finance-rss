@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 // Force Vercel rebuild: 2025-12-03
+import { Analytics } from "@vercel/analytics/react";
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/Header';
@@ -32,6 +33,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>
