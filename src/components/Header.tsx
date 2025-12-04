@@ -14,6 +14,7 @@ const NAV_ITEMS = [
     { name: 'Markets', href: '/markets' },
     { name: 'Macro', href: '/macro' },
     { name: 'Stocks', href: '/stocks/overview' },
+    { name: 'Quant', href: '/quant' },
     { name: 'Sources', href: '/sources' },
 ];
 

@@ -21,7 +21,7 @@ export default function SourcesPage() {
             <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {RSS_SOURCES.map((source) => (
                     <div
-                        key={source.id}
+                        key={`source-${source.id}`}
                         className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-lg hover:border-primary/20 hover:-translate-y-1"
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-primary/5 opacity-0 transition-opacity group-hover:opacity-100" />

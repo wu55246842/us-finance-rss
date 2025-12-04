@@ -52,7 +52,7 @@ export function FeedContainer({ initialArticles, defaultTab = 'all', showTabs = 
                     <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
                         {(['all', 'markets', 'macro', 'official'] as const).map((tab) => (
                             <button
-                                key={tab}
+                                key={`tab-${tab}`}
                                 onClick={() => setActiveTab(tab)}
                                 className={clsx(
                                     'relative whitespace-nowrap rounded-full px-5 py-2 text-sm font-medium transition-all',
@@ -100,7 +100,7 @@ export function FeedContainer({ initialArticles, defaultTab = 'all', showTabs = 
             ) : (
                 <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                     {filteredArticles.map((article, index) => (
-                        <div key={article.id}>
+                        <div key={`article-${article.id}-${index}`}>
                             <ArticleCard article={article} index={index} />
                             {/* Insert Ad every 6 items */}
                             {(index + 1) % 6 === 0 && (
