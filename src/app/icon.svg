@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 90" fill="none">
+  <!-- Circle/Coin Background for Icon (Moved to back and added fill) -->
+  <circle cx="45" cy="45" r="35" stroke="#0f172a" stroke-width="2" fill="#ffffff" />
+
+  <!-- Chart Line -->
+  <path d="M10 60 L 30 50 L 50 65 L 80 30" stroke="#0f172a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Eagle Wing / Flag Stripes Stylization -->
+  <path d="M10 30 Q 45 10 80 30" stroke="#ca8a04" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+  <path d="M15 35 Q 45 18 75 35" stroke="#ca8a04" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+</svg>

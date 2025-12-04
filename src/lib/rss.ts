@@ -5,11 +5,7 @@ import { RSS_SOURCES } from './sources';
 
 const parser = new Parser();
 
-// Bypass SSL certificate validation for local development/builds if needed
-// This is required for some corporate environments or specific network setups
-if (process.env.NODE_TLS_REJECT_UNAUTHORIZED === undefined) {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-}
+
 
 // Cache revalidation time in seconds (5 minutes)
 export const REVALIDATE_TIME = 300;
