@@ -98,31 +98,19 @@ export function FeedContainer({ initialArticles, defaultTab = 'all', showTabs = 
             {filteredArticles.length === 0 ? (
                 <EmptyState message="Try adjusting your search or category filter." />
             ) : (
-                <motion.div
-                    layout
-                    className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-                >
-                    <AnimatePresence mode='popLayout'>
-                        {filteredArticles.map((article, index) => (
-                            <motion.div
-                                key={article.id}
-                                layout
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <ArticleCard article={article} index={index} />
-                                {/* Insert Ad every 6 items */}
-                                {(index + 1) % 6 === 0 && (
-                                    <div className="col-span-full mt-6 mb-6">
-                                        <AdPlaceholder size="banner" className="w-full rounded-xl overflow-hidden shadow-sm" />
-                                    </div>
-                                )}
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                </motion.div>
+                <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredArticles.map((article, index) => (
+                        <div key={article.id}>
+                            <ArticleCard article={article} index={index} />
+                            {/* Insert Ad every 6 items */}
+                            {(index + 1) % 6 === 0 && (
+                                <div className="col-span-full mt-6 mb-6">
+                                    <AdPlaceholder size="banner" className="w-full rounded-xl overflow-hidden shadow-sm" />
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
             )}
 
             <div className="mt-12">
