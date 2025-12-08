@@ -15,6 +15,7 @@ const NAV_ITEMS = [
     { name: 'Macro', href: '/macro' },
     { name: 'Stocks', href: '/stocks/overview' },
     { name: 'Quant', href: '/quant' },
+    { name: 'Blog', href: '/blog' },
     { name: 'Sources', href: '/sources' },
 ];
 
