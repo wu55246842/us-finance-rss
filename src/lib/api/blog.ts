@@ -1,38 +1,81 @@
 import { BlogPost } from '@/lib/types/blog';
 
-const MOCK_BLOG_POSTS: BlogPost[] = [
-    {
-        id: '1',
-        time: new Date().toISOString(),
-        title: 'Market Analysis: The Fed\'s Next Move',
-        content: 'In this comprehensive analysis, we explore the potential outcomes of the upcoming FOMC meeting and what it means for equity markets. Inflation data has been mixed, leading to increased volatility...',
-        resources: ['https://www.federalreserve.gov', 'https://www.bloomberg.com/markets'],
-        youtubeLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    },
-    {
-        id: '2',
-        time: new Date(Date.now() - 86400000).toISOString(),
-        title: 'Tech Stocks: Is the Rally Over?',
-        content: 'We take a deep dive into the technicals of the Nasdaq 100. With valuations stretching to historic highs, are we due for a correction, or is the AI-driven boom just getting started?',
-        resources: ['https://finance.yahoo.com'],
-        youtubeLink: '',
-    },
-    {
-        id: '3',
-        time: new Date(Date.now() - 172800000).toISOString(),
-        title: 'Understanding Yield Curves',
-        content: 'A beginner\'s guide to understanding what the bond market is predicting about the economy. The inverted yield curve has historically been a reliable recession indicator...',
-        resources: [],
-    }
-];
-
 export async function fetchBlogPosts(): Promise<BlogPost[]> {
-    // const res = await fetch(process.env.BLOG_API_URL || 'https://wu55246842.app.n8n.cloud/webhook/ai-news-digest');
-    // if (!res.ok) throw new Error('Failed to fetch posts');
-    // console.log(res.json());
-    // return res.json();
+    const SHEET_ID = process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID || '11ItEdcG-6950z5K3V6Wa1JeEeLYLCTnw9wJAi6KYGYY';
+    const GID = process.env.NEXT_PUBLIC_GOOGLE_SHEET_GID || '0';
 
-    // Simulating network delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return MOCK_BLOG_POSTS;
+    if (!SHEET_ID) {
+        console.warn('NEXT_PUBLIC_GOOGLE_SHEET_ID is not set.');
+        return [];
+    }
+
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+
+    try {
+        // @ts-ignore - Next.js fetch extension
+        const response = await fetch(url, { next: { revalidate: 3600 } });
+        if (!response.ok) throw new Error('Failed to fetch Google Sheet data');
+
+        const csvText = await response.text();
+
+        // Robust CSV parser to handle multiline quoted content
+        const rows: { datetime: string; content: string }[] = [];
+        const regex = /^(\d{12}),"((?:[^"]|"")*)"/gm;
+        let match;
+
+        while ((match = regex.exec(csvText)) !== null) {
+            const datetime = match[1];
+            // Unescape double quotes
+            const content = match[2].replace(/""/g, '"');
+            rows.push({ datetime, content });
+        }
+
+        if (rows.length === 0 && csvText.trim().length > 0) {
+            // Fallback for simple non-quoted format if regex fails
+            csvText.split('\n').forEach(row => {
+                const firstCommaIndex = row.indexOf(',');
+                if (firstCommaIndex !== -1) {
+                    const datetime = row.substring(0, firstCommaIndex).trim();
+                    const content = row.substring(firstCommaIndex + 1).trim().replace(/^"|"$/g, '').replace(/""/g, '"');
+                    if (datetime && datetime !== 'datetime' && /^\d+$/.test(datetime)) {
+                        rows.push({ datetime, content });
+                    }
+                }
+            });
+        }
+
+        return rows.map((row, index) => {
+            // Parse datetime format: 202601112033 (YYYYMMDDHHmm)
+            const dt = row.datetime;
+            let isoDate = new Date().toISOString();
+
+            if (dt.length === 12) {
+                const year = dt.substring(0, 4);
+                const month = dt.substring(4, 6);
+                const day = dt.substring(6, 8);
+                const hour = dt.substring(8, 10);
+                const minute = dt.substring(10, 12);
+                isoDate = new Date(`${year}-${month}-${day}T${hour}:${minute}:00Z`).toISOString();
+            }
+
+            // Extract title from content (first line or first 100 chars)
+            const lines = row.content.split('\n');
+            const title = lines[0].length > 100 ? lines[0].substring(0, 97) + '...' : lines[0];
+
+            return {
+                id: `sheet-${index}-${dt}`,
+                time: isoDate,
+                title: title || 'Market Intelligence Update',
+                content: row.content,
+            };
+        }).sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()); // Newest first
+    } catch (error) {
+        console.error('Error fetching blog posts from Google Sheets:', error);
+        return [];
+    }
+}
+
+export async function getBlogPostById(id: string): Promise<BlogPost | null> {
+    const posts = await fetchBlogPosts();
+    return posts.find(p => p.id === id) || null;
 }

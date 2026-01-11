@@ -11,8 +11,40 @@ import { ThemeProvider } from '@/components/providers/ThemeProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'US Markets & Macro Hub – American Stock Market & Macroeconomic News Aggregator',
+  metadataBase: new URL('https://financea.me'),
+  title: {
+    default: 'US Markets & Macro Hub – American Stock Market & Macroeconomic News Aggregator',
+    template: '%s | US Markets & Macro Hub'
+  },
   description: 'Aggregating US stock market news, individual stock updates (AAPL, etc.), macro economic data, Fed news, and official government reports.',
+  keywords: ['US markets', 'stock market news', 'macroeconomic data', 'Fed news', 'financial news aggregator', 'American stocks'],
+  authors: [{ name: 'Financea Team' }],
+  creator: 'Financea',
+  publisher: 'Financea',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    title: 'US Markets & Macro Hub',
+    description: 'American Stock Market & Macroeconomic News Aggregator',
+    url: 'https://financea.me',
+    siteName: 'US Markets & Macro Hub',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'US Markets & Macro Hub',
+    description: 'American Stock Market & Macroeconomic News Aggregator',
+  },
+  alternates: {
+    canonical: '/',
+  },
+  verification: {
+    google: 'n-wQ4GYKs9oW6Y0ZMqzNlfvK0RH93f-HkA63k2l96KU',
+  },
 };
 
 export default function RootLayout({

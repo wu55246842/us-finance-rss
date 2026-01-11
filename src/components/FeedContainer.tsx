@@ -45,8 +45,23 @@ export function FeedContainer({ initialArticles, defaultTab = 'all', showTabs = 
         return articles;
     }, [initialArticles, activeTab, searchQuery]);
 
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        'itemListElement': filteredArticles.slice(0, 10).map((article, index) => ({
+            '@type': 'ListItem',
+            'position': index + 1,
+            'url': article.link,
+            'name': article.title,
+        })),
+    };
+
     return (
         <div className="space-y-8">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 {showTabs ? (
                     <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">

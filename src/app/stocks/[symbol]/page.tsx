@@ -10,7 +10,32 @@ import {
     COMPANY_FINANCIALS_WIDGET_CONFIG,
 } from "@/lib/openstock/constants";
 
-export default async function StockDetails({ params }: StockDetailsPageProps) {
+import type { Metadata } from 'next';
+
+type Props = {
+    params: Promise<{ symbol: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { symbol } = await params;
+    const upperSymbol = symbol.toUpperCase();
+
+    return {
+        title: `${upperSymbol} Stock Price, Chart & Technical Analysis`,
+        description: `View real-time ${upperSymbol} stock price, advanced technical charts, company profile, and financial data. Comprehensive analysis for ${upperSymbol} traders and investors.`,
+        openGraph: {
+            title: `${upperSymbol} Stock Analysis | US Markets Hub`,
+            description: `Real-time data and technical analysis for ${upperSymbol}.`,
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `${upperSymbol} Stock Analysis`,
+            description: `Technical analysis and financial profile for ${upperSymbol}.`,
+        },
+    };
+}
+
+export default async function StockDetails({ params }: Props) {
     const { symbol } = await params;
     const scriptUrl = `https://s3.tradingview.com/external-embedding/embed-widget-`;
 
