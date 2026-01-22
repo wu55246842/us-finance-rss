@@ -3,6 +3,7 @@ export interface BlogPost {
     time: string; // ISO date string
     title: string;
     content: string;
+    formattedContent?: string;
     resources?: string[];
     youtubeLink?: string;
 }

@@ -1,9 +1,10 @@
-import { getBlogPostById } from '@/lib/api/blog';
+import { getBlogPostById, beautifyBlogContent } from '@/lib/api/blog';
 import { format } from 'date-fns';
 import { ArrowLeft, Calendar, Clock, Share2, Youtube, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import ReactMarkdown from 'react-markdown';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -42,6 +43,9 @@ export default async function BlogPostPage({ params }: Props) {
     };
 
     const youtubeId = post.youtubeLink ? getYoutubeId(post.youtubeLink) : null;
+
+    // Beautify content
+    const beautifiedContent = await beautifyBlogContent(post.content);
 
     return (
         <div className="min-h-screen bg-background pb-20">
@@ -104,14 +108,21 @@ export default async function BlogPostPage({ params }: Props) {
                     )}
 
                     {/* Text Content */}
-                    <div className="prose prose-lg dark:prose-invert max-w-none">
-                        {post.content.split('\n').map((paragraph, index) => (
-                            paragraph.trim() ? (
-                                <p key={index} className="leading-relaxed mb-6 text-lg text-foreground/90">
-                                    {paragraph}
-                                </p>
-                            ) : <br key={index} />
-                        ))}
+                    <div className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-relaxed">
+                        <ReactMarkdown
+                            components={{
+                                p: ({ children }) => <p className="mb-6 text-lg">{children}</p>,
+                                h1: ({ children }) => <h1 className="text-3xl font-bold mt-12 mb-6">{children}</h1>,
+                                h2: ({ children }) => <h2 className="text-2xl font-bold mt-10 mb-4">{children}</h2>,
+                                h3: ({ children }) => <h3 className="text-xl font-bold mt-8 mb-3">{children}</h3>,
+                                ul: ({ children }) => <ul className="list-disc pl-6 mb-6 space-y-2">{children}</ul>,
+                                ol: ({ children }) => <ol className="list-decimal pl-6 mb-6 space-y-2">{children}</ol>,
+                                li: ({ children }) => <li className="text-lg">{children}</li>,
+                                strong: ({ children }) => <strong className="font-bold text-foreground">{children}</strong>,
+                            }}
+                        >
+                            {beautifiedContent}
+                        </ReactMarkdown>
                     </div>
 
                     {/* Resources Section if available */}

@@ -1,4 +1,5 @@
 import { BlogPost } from '@/lib/types/blog';
+import { generateText } from '@/lib/pollinations';
 
 export async function fetchBlogPosts(): Promise<BlogPost[]> {
     const SHEET_ID = process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID || '11ItEdcG-6950z5K3V6Wa1JeEeLYLCTnw9wJAi6KYGYY';
@@ -12,7 +13,6 @@ export async function fetchBlogPosts(): Promise<BlogPost[]> {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
 
     try {
-        // @ts-ignore - Next.js fetch extension
         const response = await fetch(url, { next: { revalidate: 3600 } });
         if (!response.ok) throw new Error('Failed to fetch Google Sheet data');
 
@@ -78,4 +78,33 @@ export async function fetchBlogPosts(): Promise<BlogPost[]> {
 export async function getBlogPostById(id: string): Promise<BlogPost | null> {
     const posts = await fetchBlogPosts();
     return posts.find(p => p.id === id) || null;
+}
+
+export async function beautifyBlogContent(content: string): Promise<string> {
+    try {
+        const prompt = `
+You are a senior financial analyst and content strategist. Your task is to transform the following raw financial data into a high-value, professional blog post that demonstrates "Expertise, Authoritativeness, and Trustworthiness" (E-A-T).
+
+FOLLOW THESE RULES:
+1.  **Structure**: Start with a compelling, descriptive H1 title.
+2.  **Summary**: Include a brief "Key Takeaways" or "Executive Summary" section (2-3 bullet points) at the top.
+3.  **Depth**: Add a "Market Context" or "Analysis" section that explains why this data matters for investors or the economy, based on the provided content.
+4.  **Formatting**: Use clean Markdown with headers (##), bold text for emphasis, and organized lists.
+5.  **Data Integrity**: Do not change the fundamental facts or numbers provided in the input, but you MAY rephrase sentences for better flow and professional tone.
+6.  **Style**: Use a sophisticated, institutional-grade tone (similar to Bloomberg or The Wall Street Journal).
+
+Raw Content:
+${content}
+        `.trim();
+
+        const formatted = await generateText({
+            messages: [{ role: 'user', content: prompt }],
+            model: 'gemini-fast',
+        });
+
+        return formatted || content;
+    } catch (error) {
+        console.error('Error beautifying blog content:', error);
+        return content;
+    }
 }
