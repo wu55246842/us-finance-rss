@@ -7,7 +7,8 @@ import { EmptyState } from './ui/EmptyState';
 import { AdPlaceholder } from './AdPlaceholder';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { Search, Clock } from 'lucide-react';
+import Link from 'next/link';
 
 interface FeedContainerProps {
     initialArticles: Article[];
@@ -64,7 +65,7 @@ export function FeedContainer({ initialArticles, defaultTab = 'all', showTabs = 
             />
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 {showTabs ? (
-                    <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar flex-1">
                         {(['all', 'markets', 'macro', 'official'] as const).map((tab) => (
                             <button
                                 key={`tab-${tab}`}
@@ -86,6 +87,15 @@ export function FeedContainer({ initialArticles, defaultTab = 'all', showTabs = 
                                 <span className="relative z-10">{tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
                             </button>
                         ))}
+
+                        {/* Special History Tab */}
+                        <Link
+                            href="/analysis-history"
+                            className="ml-auto inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-primary/10 px-6 py-2.5 text-base font-bold text-primary border-2 border-primary/20 transition-all hover:bg-primary/20 hover:scale-105 active:scale-95 shadow-sm"
+                        >
+                            <Clock size={18} />
+                            <span>History Highlights</span>
+                        </Link>
                     </div>
                 ) : (
                     <div className="text-lg font-semibold text-muted-foreground">

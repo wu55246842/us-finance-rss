@@ -75,7 +75,34 @@ export async function fetchBlogPosts(): Promise<BlogPost[]> {
     }
 }
 
+import { db } from '../db';
+import { blogPosts } from '../db/schema';
+import { eq } from 'drizzle-orm';
+
 export async function getBlogPostById(id: string): Promise<BlogPost | null> {
+    if (id.startsWith('ai-')) {
+        try {
+            const dbId = parseInt(id.replace('ai-', ''));
+            const [post] = await db
+                .select()
+                .from(blogPosts)
+                .where(eq(blogPosts.id, dbId))
+                .limit(1);
+
+            if (post) {
+                return {
+                    id: `ai-${post.id}`,
+                    title: post.title,
+                    content: post.content,
+                    time: post.createdAt.toISOString(),
+                    type: post.type as any,
+                };
+            }
+        } catch (error) {
+            console.error('Error fetching AI post by ID:', error);
+        }
+    }
+
     const posts = await fetchBlogPosts();
     return posts.find(p => p.id === id) || null;
 }

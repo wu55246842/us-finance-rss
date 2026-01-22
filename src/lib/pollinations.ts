@@ -39,13 +39,14 @@ export async function generateText({
     seed,
     jsonMode = false,
 }: PollinationsRequest): Promise<string> {
-    const apiKey = process.env.POLLINATIONS_API_KEY || 'pk_fj1QiasPZGeKF2QuP';
+    const apiKey = process.env.POLLINATIONS_API_KEY;
 
     if (!apiKey) {
-        console.warn('POLLINATIONS_API_KEY is not defined in environment variables.');
+        console.warn('POLLINATIONS_API_KEY is not defined in environment variables. Using hardcoded fallback.');
     }
 
     try {
+        console.log(`Calling Pollinations AI [${model}]...`);
         const response = await fetch(POLLINATIONS_ENDPOINT, {
             method: 'POST',
             headers: {
@@ -56,7 +57,7 @@ export async function generateText({
                 messages,
                 model,
                 seed,
-                jsonMode,
+                ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
             }),
         });
 

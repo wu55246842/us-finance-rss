@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
+import { ShareMenu } from '@/components/ShareMenu';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -44,8 +45,10 @@ export default async function BlogPostPage({ params }: Props) {
 
     const youtubeId = post.youtubeLink ? getYoutubeId(post.youtubeLink) : null;
 
-    // Beautify content
-    const beautifiedContent = await beautifyBlogContent(post.content);
+    // Beautify content if not already an AI analysis post
+    const beautifiedContent = post.type === 'ai_analysis'
+        ? post.content
+        : await beautifyBlogContent(post.content);
 
     return (
         <div className="min-h-screen bg-background pb-20">
@@ -81,12 +84,9 @@ export default async function BlogPostPage({ params }: Props) {
                         {post.title}
                     </h1>
 
-                    {/* Social/Actions */}
+                    {/* Premium Share Menu */}
                     <div className="flex items-center gap-3 pt-4">
-                        <button className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium hover:bg-accent transition-colors">
-                            <Share2 className="h-4 w-4" />
-                            Share
-                        </button>
+                        <ShareMenu title={post.title} />
                     </div>
                 </header>
 
