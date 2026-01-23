@@ -8,7 +8,13 @@ function getYf() {
 
 const yf = getYf();
 // Suppress the "Update available" warning which clogs logs and can confuse parsers
-yf.suppressNotices(['yahooSurvey']);
+if (yf && typeof yf.suppressNotices === 'function') {
+    yf.suppressNotices(['yahooSurvey']);
+} else {
+    // In rare build environments, yf might not be fully initialized yet or is a different shape.
+    // We log and continue as this is non-critical.
+    console.warn('yahooFinance.suppressNotices is not a function. Import shape:', Object.keys(yf || {}));
+}
 
 export interface MarketQuote {
     symbol: string;
