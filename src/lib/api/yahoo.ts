@@ -1,19 +1,39 @@
-import yahooFinance from 'yahoo-finance2';
+const pkg = require('yahoo-finance2');
 
 function getYf() {
-    // Robustly handle CommonJS vs ESM import interop
-    // In some environments, the default export is nested in .default
-    return (yahooFinance as any).default || yahooFinance;
+    // In some environments, pkg itself is the instance.
+    // In others, pkg.default is the instance.
+    // In some (like rare ESM/CJS mixes), we might get the Class and need to instantiate.
+
+    let instance = pkg.default || pkg;
+
+    // Check if it looks like the instance (has quote function)
+    if (instance && typeof instance.quote === 'function') {
+        return instance;
+    }
+
+    // If not, maybe it's the module with named exports? 
+    // Or maybe we need to find the class?
+    // Based on logs, we saw keys like ['autoc', ... 'quote']. 
+    // If 'quote' is there but not a function, or if suppressNotices is missing, it's ambiguous.
+
+    // Let's try to find a 'default' property that might be the instance recursively
+    if (instance && instance.default && typeof instance.default.quote === 'function') {
+        return instance.default;
+    }
+
+    console.warn('YahooFinance import ambiguous, using best guess:', Object.keys(instance || {}));
+    return instance;
 }
 
 const yf = getYf();
-// Suppress the "Update available" warning which clogs logs and can confuse parsers
+
+// Safeguard suppressNotices
 if (yf && typeof yf.suppressNotices === 'function') {
     yf.suppressNotices(['yahooSurvey']);
 } else {
-    // In rare build environments, yf might not be fully initialized yet or is a different shape.
-    // We log and continue as this is non-critical.
-    console.warn('yahooFinance.suppressNotices is not a function. Import shape:', Object.keys(yf || {}));
+    // Try to suppress via other means or ignore
+    console.log('yf.suppressNotices not found/function');
 }
 
 export interface MarketQuote {
