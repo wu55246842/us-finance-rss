@@ -1,40 +1,14 @@
-const pkg = require('yahoo-finance2');
+import YahooFinance from "yahoo-finance2";
 
-function getYf() {
-    // In some environments, pkg itself is the instance.
-    // In others, pkg.default is the instance.
-    // In some (like rare ESM/CJS mixes), we might get the Class and need to instantiate.
+const yahooFinance = new YahooFinance({
+    // Optional: avoid rate limiting
+    queue: { concurrency: 2 },
+});
 
-    let instance = pkg.default || pkg;
-
-    // Check if it looks like the instance (has quote function)
-    if (instance && typeof instance.quote === 'function') {
-        return instance;
-    }
-
-    // If not, maybe it's the module with named exports? 
-    // Or maybe we need to find the class?
-    // Based on logs, we saw keys like ['autoc', ... 'quote']. 
-    // If 'quote' is there but not a function, or if suppressNotices is missing, it's ambiguous.
-
-    // Let's try to find a 'default' property that might be the instance recursively
-    if (instance && instance.default && typeof instance.default.quote === 'function') {
-        return instance.default;
-    }
-
-    console.warn('YahooFinance import ambiguous, using best guess:', Object.keys(instance || {}));
-    return instance;
-}
-
-const yf = getYf();
-
-// Safeguard suppressNotices
-if (yf && typeof yf.suppressNotices === 'function') {
-    yf.suppressNotices(['yahooSurvey']);
-} else {
-    // Try to suppress via other means or ignore
-    console.log('yf.suppressNotices not found/function');
-}
+// Optional: check if function exists (safe navigation)
+// if (typeof yahooFinance.suppressNotices === 'function') {
+//     yahooFinance.suppressNotices(["yahooSurvey"]);
+// }
 
 export interface MarketQuote {
     symbol: string;
@@ -45,44 +19,39 @@ export interface MarketQuote {
 }
 
 const TICKER_CONFIG = [
-    { symbol: 'SPY', label: 'S&P 500' },
-    { symbol: 'TLT', label: 'Treasury' },
-    { symbol: '^VIX', displaySymbol: 'VXX', label: 'VIX Proxy' }, // Yahoo uses ^VIX, app uses VXX
-    { symbol: 'UUP', label: 'USD Index' },
-    { symbol: 'QQQ', label: 'Nasdaq 100' },
+    { symbol: "SPY", label: "S&P 500" },
+    { symbol: "TLT", label: "Treasury" },
+    { symbol: "^VIX", displaySymbol: "VXX", label: "VIX Proxy" },
+    { symbol: "UUP", label: "USD Index" },
+    { symbol: "QQQ", label: "Nasdaq 100" },
 ];
 
 export async function getMarketIndices(): Promise<MarketQuote[]> {
-    try {
-        const quotes = await Promise.all(
-            TICKER_CONFIG.map(async (config) => {
-                try {
-                    const quote = await yf.quote(config.symbol);
-                    return {
-                        symbol: config.displaySymbol || config.symbol,
-                        label: config.label,
-                        currentPrice: quote.regularMarketPrice || 0,
-                        change: quote.regularMarketChange || 0,
-                        percentChange: quote.regularMarketChangePercent || 0,
-                    };
-                } catch (e) {
-                    console.error(`Failed to fetch quote for ${config.symbol}`, e);
-                    // Return empty/zero object on failure to avoid breaking the whole page
-                    return {
-                        symbol: config.displaySymbol || config.symbol,
-                        label: config.label,
-                        currentPrice: 0,
-                        change: 0,
-                        percentChange: 0
-                    };
-                }
-            })
-        );
-        return quotes;
-    } catch (error) {
-        console.error('Error fetching market indices from Yahoo:', error);
-        return [];
-    }
+    const quotes = await Promise.all(
+        TICKER_CONFIG.map(async (config) => {
+            try {
+                const quote = await yahooFinance.quote(config.symbol);
+                return {
+                    symbol: config.displaySymbol || config.symbol,
+                    label: config.label,
+                    currentPrice: quote.regularMarketPrice ?? 0,
+                    change: quote.regularMarketChange ?? 0,
+                    percentChange: quote.regularMarketChangePercent ?? 0,
+                };
+            } catch (e) {
+                console.error(`Failed to fetch quote for ${config.symbol}`, e);
+                return {
+                    symbol: config.displaySymbol || config.symbol,
+                    label: config.label,
+                    currentPrice: 0,
+                    change: 0,
+                    percentChange: 0,
+                };
+            }
+        })
+    );
+
+    return quotes;
 }
 
 export interface TechnicalIndicators {
@@ -94,29 +63,21 @@ export interface TechnicalIndicators {
 
 export async function getTechnicalIndicators(symbol: string): Promise<TechnicalIndicators | null> {
     try {
-        // Fetch 365 days of data to ensure enough for SMA200
         const end = new Date();
         const start = new Date();
-        start.setDate(end.getDate() - 400); // 400 days ago to be safe for trading days
+        start.setDate(end.getDate() - 400);
 
-        const queryOptions = { period1: start, period2: end, interval: '1d' as const };
+        const result = await yahooFinance.historical(symbol, {
+            period1: start,
+            period2: end,
+            interval: "1d",
+        });
 
-        let result: any[] = [];
-        try {
-            result = await yf.historical(symbol, queryOptions);
-        } catch (e) {
-            console.error(`Failed to fetch history for ${symbol}`, e);
-            return null;
-        }
+        const closes = result
+            .map((q: any) => q.close)
+            .filter((c: any): c is number => typeof c === "number");
 
-        // Extract close prices, result is sorted by date ascending usually, but ensure it.
-        // Yahoo returns newest last.
-        const closes = result.map((quote: any) => quote.close).filter((c: any): c is number => typeof c === 'number');
-
-        if (closes.length < 200) {
-            console.warn(`Not enough data for ${symbol} technicals. Got ${closes.length} points.`);
-            return null;
-        }
+        if (closes.length < 200) return null;
 
         return {
             rsi: calculateRSI(closes, 14),
@@ -124,14 +85,13 @@ export async function getTechnicalIndicators(symbol: string): Promise<TechnicalI
             sma50: calculateSMA(closes, 50),
             sma200: calculateSMA(closes, 200),
         };
-    } catch (error) {
-        console.error(`Error fetching technicals for ${symbol} from Yahoo:`, error);
+    } catch (e) {
+        console.error(`Error fetching technicals for ${symbol}:`, e);
         return null;
     }
 }
 
 // --- Helper Functions ---
-
 function calculateSMA(data: number[], period: number): number {
     if (data.length < period) return 0;
     const slice = data.slice(-period);
@@ -142,14 +102,9 @@ function calculateSMA(data: number[], period: number): number {
 function calculateRSI(data: number[], period: number): number {
     if (data.length < period + 1) return 0;
 
-    const changes = [];
-    for (let i = 1; i < data.length; i++) {
-        changes.push(data[i] - data[i - 1]);
-    }
+    const changes: number[] = [];
+    for (let i = 1; i < data.length; i++) changes.push(data[i] - data[i - 1]);
 
-    if (changes.length < period) return 0;
-
-    // First RSI
     let avgGain = 0;
     let avgLoss = 0;
 
@@ -164,16 +119,14 @@ function calculateRSI(data: number[], period: number): number {
 
     for (let i = period; i < changes.length; i++) {
         const chg = changes[i];
-        let currentGain = 0;
-        let currentLoss = 0;
-        if (chg > 0) currentGain = chg;
-        else currentLoss = Math.abs(chg);
+        const gain = chg > 0 ? chg : 0;
+        const loss = chg < 0 ? Math.abs(chg) : 0;
 
-        avgGain = ((avgGain * (period - 1)) + currentGain) / period;
-        avgLoss = ((avgLoss * (period - 1)) + currentLoss) / period;
+        avgGain = (avgGain * (period - 1) + gain) / period;
+        avgLoss = (avgLoss * (period - 1) + loss) / period;
     }
 
     if (avgLoss === 0) return 100;
     const rs = avgGain / avgLoss;
-    return 100 - (100 / (1 + rs));
+    return 100 - 100 / (1 + rs);
 }

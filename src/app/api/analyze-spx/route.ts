@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const runtime = 'nodejs';
 import { generateSpxAnalysis } from '@/lib/actions/analyze';
 
 export async function GET() {
