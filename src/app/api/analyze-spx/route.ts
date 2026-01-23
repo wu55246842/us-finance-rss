@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getMarketIndices, getTechnicalIndicators, getMarketNews } from '@/lib/api/market';
+import { getMarketNews } from '@/lib/api/market';
+import { getMarketIndices, getTechnicalIndicators } from '@/lib/api/yahoo';
 import { generateAnalysis } from '@/lib/pollinations';
 import { appendToSheet } from '@/lib/google-sheets';
 
