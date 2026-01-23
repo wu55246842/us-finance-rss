@@ -83,18 +83,20 @@ Write the full blog post now.
     }
 }
 
-export async function getLatestAIAnalysis() {
+export async function getLatestAIAnalysis(limit: number = 1) {
     try {
-        const [latest] = await db
+        const results = await db
             .select()
             .from(blogPosts)
             .where(eq(blogPosts.type, 'ai_analysis'))
             .orderBy(desc(blogPosts.createdAt))
-            .limit(1);
-        return latest || null;
+            .limit(limit);
+
+        if (limit === 1) return results[0] || null;
+        return results;
     } catch (error) {
         console.error('Error fetching latest AI analysis:', error);
-        return null;
+        return limit === 1 ? null : [];
     }
 }
 

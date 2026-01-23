@@ -10,18 +10,18 @@ export function MarketStatus() {
 
     useEffect(() => {
         const checkMarketStatus = () => {
-            // Get current time in ET (Eastern Time)
-            const etTime = new Intl.DateTimeFormat('en-US', {
+            // Get current time in ET (Eastern Time) for market logic
+            const now = new Date();
+            const etTimeParts = new Intl.DateTimeFormat('en-US', {
                 timeZone: 'America/New_York',
                 hour: 'numeric',
                 minute: 'numeric',
-                second: 'numeric',
                 hour12: false,
                 weekday: 'short',
-            }).formatToParts(new Date());
+            }).formatToParts(now);
 
             const parts: Record<string, string> = {};
-            etTime.forEach(({ type, value }) => {
+            etTimeParts.forEach(({ type, value }) => {
                 parts[type] = value;
             });
 
@@ -38,8 +38,16 @@ export function MarketStatus() {
             const open = isWeekday && timeInMinutes >= openTime && timeInMinutes < closeTime;
             setIsOpen(open);
 
-            // Format current ET time for display
-            setCurrentTime(`${parts.hour}:${parts.minute} ET`);
+            // Get current Singapore time for display
+            const sgTime = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Singapore',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+            }).format(now);
+
+            setCurrentTime(`${sgTime} SGT`);
+            console.log('MarketStatus updated with SGT:', sgTime);
         };
 
         checkMarketStatus();
@@ -48,17 +56,17 @@ export function MarketStatus() {
     }, []);
 
     return (
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background/50 border border-border text-[10px] font-bold uppercase tracking-wider">
+        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-background/50 border border-border text-[9px] font-bold uppercase tracking-tight">
             <div className={clsx(
-                "h-2 w-2 rounded-full",
+                "h-1.5 w-1.5 rounded-full",
                 isOpen ? "bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-muted-foreground/50"
             )} />
             <span className={clsx(
                 isOpen ? "text-emerald-500" : "text-muted-foreground"
             )}>
-                Market {isOpen ? 'Live' : 'Closed'}
+                {isOpen ? 'Live' : 'Closed'}
             </span>
-            <span className="hidden sm:inline border-l border-border pl-2 text-muted-foreground/70 lowercase font-medium">
+            <span className="hidden sm:inline border-l border-border pl-1.5 text-muted-foreground/70  font-medium">
                 {currentTime}
             </span>
         </div>

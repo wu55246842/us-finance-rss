@@ -6,16 +6,16 @@ import { getMarketIndices } from '@/lib/api/market';
 export const revalidate = 300;
 
 export default async function Home() {
-  const [articles, latestAIAnalysis, marketQuotes] = await Promise.all([
+  const [articles, latestAnalyses, marketQuotes] = await Promise.all([
     getAllFeeds(),
-    getLatestAIAnalysis(),
+    getLatestAIAnalysis(2),
     getMarketIndices()
   ]);
 
   return (
     <HomeContent
       initialArticles={articles}
-      latestAnalysis={latestAIAnalysis}
+      latestAnalyses={latestAnalyses as any}
       marketQuotes={marketQuotes}
     />
   );
