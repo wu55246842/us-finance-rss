@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 export const metadata: Metadata = {
     title: 'Terms of Service',
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
 export default function TermsPage() {
     return (
         <div className="container mx-auto px-4 py-12 max-w-4xl">
+            <Breadcrumbs />
             <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
 
             <section className="space-y-6 text-muted-foreground">

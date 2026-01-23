@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight, TrendingUp, Calendar } from 'lucide-react';
+import { Sparkles, ArrowRight, TrendingUp, Calendar, Search } from 'lucide-react';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { format } from 'date-fns';
@@ -54,7 +54,7 @@ export function AIBlogHeader({ latestAnalysis, onSearch }: AIBlogHeaderProps) {
 
                             {/* Integrated Search */}
                             <div className="relative w-full md:w-64">
-                                <TrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-50" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-50" />
                                 <input
                                     type="text"
                                     placeholder="Search market news..."

@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 export const metadata: Metadata = {
     title: 'About Us',
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
     return (
         <div className="container mx-auto px-4 py-12 max-w-4xl">
+            <Breadcrumbs />
             <h1 className="text-4xl font-bold mb-8">About US Markets & Macro Hub</h1>
 
             <section className="space-y-6 text-lg text-muted-foreground">

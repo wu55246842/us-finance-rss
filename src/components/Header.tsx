@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MarketStatus } from '@/components/ui/MarketStatus';
 import SearchCommand from '@/components/openstock/SearchCommand';
 
 const NAV_ITEMS = [
@@ -50,6 +51,9 @@ export function Header() {
                             </div>
                         </div>
                     </Link>
+                    <div className="hidden sm:block">
+                        <MarketStatus />
+                    </div>
                 </div>
 
                 {/* Desktop Nav */}

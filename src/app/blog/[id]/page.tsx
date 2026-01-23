@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
 import { ShareMenu } from '@/components/ShareMenu';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -54,7 +55,7 @@ export default async function BlogPostPage({ params }: Props) {
         <div className="min-h-screen bg-background pb-20">
             {/* Header / Navigation */}
             <div className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
-                <div className="container mx-auto flex h-16 max-w-4xl items-center px-4">
+                <div className="container mx-auto flex h-16 max-w-4xl items-center px-4 justify-between">
                     <Link
                         href="/blog"
                         className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -62,6 +63,9 @@ export default async function BlogPostPage({ params }: Props) {
                         <ArrowLeft className="h-4 w-4" />
                         Back to Insights
                     </Link>
+                    <div className="hidden sm:block">
+                        <Breadcrumbs />
+                    </div>
                 </div>
             </div>
 

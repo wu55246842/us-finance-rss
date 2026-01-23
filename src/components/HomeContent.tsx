@@ -8,6 +8,8 @@ import { FeedContainer } from '@/components/FeedContainer';
 import { AIBlogHeader } from '@/components/AIBlogHeader';
 import { MarketTickers } from '@/components/MarketTickers';
 import { MarketQuote } from '@/lib/api/market';
+import { Newsletter } from '@/components/Newsletter';
+import { FeaturedSources } from '@/components/FeaturedSources';
 
 interface HomeContentProps {
     initialArticles: Article[];
@@ -26,6 +28,7 @@ export function HomeContent({ initialArticles, latestAnalysis, marketQuotes }: H
     return (
         <div className="space-y-8 pb-12">
             <Hero />
+            <FeaturedSources />
             <MarketTickers quotes={marketQuotes} />
             <div className="container mx-auto px-4 md:px-6 max-w-7xl">
                 <AIBlogHeader latestAnalysis={latestAnalysis} onSearch={setSearchQuery} />
@@ -34,6 +37,7 @@ export function HomeContent({ initialArticles, latestAnalysis, marketQuotes }: H
                     searchQuery={searchQuery}
                     showTabs={true}
                 />
+                <Newsletter />
             </div>
         </div>
     );

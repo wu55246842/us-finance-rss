@@ -7,6 +7,7 @@ import './globals.css';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import { BackToTop } from '@/components/ui/BackToTop';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -72,6 +73,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <BackToTop />
           <Analytics />
         </ThemeProvider>
       </body>
