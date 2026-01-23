@@ -18,25 +18,37 @@ export async function fetchBlogPosts(): Promise<BlogPost[]> {
 
         const csvText = await response.text();
 
-        // Robust CSV parser to handle multiline quoted content
-        const rows: { datetime: string; content: string }[] = [];
-        const regex = /^(\d{12}),"((?:[^"]|"")*)"/gm;
+        // Robust CSV parser to handle multiline quoted content, now supporting optional 3rd column (Chinese)
+        // Format: ID, "English Content", "Chinese Content"(optional)
+        const rows: { datetime: string; content: string; chineseContent?: string }[] = [];
+
+        // Regex explanations:
+        // ^(\d{12})       -> Group 1: ID (Datetime) at start of line
+        // ,"((?:[^"]|"")*)" -> Group 2: English Content (quoted, double quotes escaped as "")
+        // (?:,"((?:[^"]|"")*)")? -> Group 3: Chinese Content (optional, quoted)
+        const regex = /^(\d{12}),"((?:[^"]|"")*)"(?:,"((?:[^"]|"")*)")?/gm;
         let match;
 
         while ((match = regex.exec(csvText)) !== null) {
             const datetime = match[1];
             // Unescape double quotes
             const content = match[2].replace(/""/g, '"');
-            rows.push({ datetime, content });
+            const chineseContent = match[3] ? match[3].replace(/""/g, '"') : undefined;
+            rows.push({ datetime, content, chineseContent });
         }
 
         if (rows.length === 0 && csvText.trim().length > 0) {
-            // Fallback for simple non-quoted format if regex fails
+            // Fallback for simple non-quoted format if regex fails (legacy support, mostly for simple 2-col)
             csvText.split('\n').forEach(row => {
                 const firstCommaIndex = row.indexOf(',');
                 if (firstCommaIndex !== -1) {
                     const datetime = row.substring(0, firstCommaIndex).trim();
-                    const content = row.substring(firstCommaIndex + 1).trim().replace(/^"|"$/g, '').replace(/""/g, '"');
+                    const rest = row.substring(firstCommaIndex + 1).trim();
+
+                    // Simple split if 3rd col exists but assume no commas in content (risky fallback)
+                    // Better to just support 2 col fallback for now
+                    const content = rest.replace(/^"|"$/g, '').replace(/""/g, '"');
+
                     if (datetime && datetime !== 'datetime' && /^\d+$/.test(datetime)) {
                         rows.push({ datetime, content });
                     }
@@ -67,6 +79,7 @@ export async function fetchBlogPosts(): Promise<BlogPost[]> {
                 time: isoDate,
                 title: title || 'Market Intelligence Update',
                 content: row.content,
+                chineseContent: row.chineseContent,
             };
         }).sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()); // Newest first
     } catch (error) {

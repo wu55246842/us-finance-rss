@@ -4,9 +4,9 @@ import { ArrowLeft, Calendar, Clock, Share2, Youtube, ExternalLink } from 'lucid
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import ReactMarkdown from 'react-markdown';
 import { ShareMenu } from '@/components/ShareMenu';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
+import { BlogPostContent } from '@/components/BlogPostContent';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -135,23 +135,13 @@ export default async function BlogPostPage({ params }: Props) {
                         </div>
                     )}
 
+
+
                     {/* Text Content */}
-                    <div className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-relaxed">
-                        <ReactMarkdown
-                            components={{
-                                p: ({ children }) => <p className="mb-6 text-lg">{children}</p>,
-                                h1: ({ children }) => <h1 className="text-3xl font-bold mt-12 mb-6">{children}</h1>,
-                                h2: ({ children }) => <h2 className="text-2xl font-bold mt-10 mb-4">{children}</h2>,
-                                h3: ({ children }) => <h3 className="text-xl font-bold mt-8 mb-3">{children}</h3>,
-                                ul: ({ children }) => <ul className="list-disc pl-6 mb-6 space-y-2">{children}</ul>,
-                                ol: ({ children }) => <ol className="list-decimal pl-6 mb-6 space-y-2">{children}</ol>,
-                                li: ({ children }) => <li className="text-lg">{children}</li>,
-                                strong: ({ children }) => <strong className="font-bold text-foreground">{children}</strong>,
-                            }}
-                        >
-                            {beautifiedContent}
-                        </ReactMarkdown>
-                    </div>
+                    <BlogPostContent
+                        content={beautifiedContent}
+                        chineseContent={post.chineseContent}
+                    />
 
                     {/* Resources Section if available */}
                     {post.resources && post.resources.length > 0 && (

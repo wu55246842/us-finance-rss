@@ -39,16 +39,38 @@ News Headlines:
 - ${newsSummary}
 
 Analysis Framework: The "Triangular Methodology" (Macro + Technical + Micro).
-Output Format: Bilingual (Chinese first, then English).
-Follow the structure: 1. Executive Summary, 2. Triangular Analysis, 3. Support/Resistance, 4. Actionable Strategy, 5. Key Data Table.
+Output Format: JSON.
+Return a JSON object with two keys:
+1. "chinese": The analysis report in Chinese.
+2. "english": The analysis report in English.
+
+Each report should follow the structure: 1. Executive Summary, 2. Triangular Analysis, 3. Support/Resistance, 4. Actionable Strategy, 5. Key Data Table.
+Ensure valid JSON format.
 `;
 
     // 5. Call Pollinations AI
-    const analysis = await generateAnalysis({
+    // 5. Call Pollinations AI
+    const responseText = await generateAnalysis({
         messages: [
             { role: 'user', content: prompt }
-        ]
+        ],
+        jsonMode: true // Hint to use JSON mode if supported by the wrapper, or just relies on prompt
     });
+
+    let englishContent = '';
+    let chineseContent = '';
+
+    try {
+        // Clean up potential markdown code blocks if the LLM wraps it
+        const jsonStr = responseText.replace(/```json\n?|\n?```/g, '').trim();
+        const parsed = JSON.parse(jsonStr);
+        englishContent = parsed.english || responseText;
+        chineseContent = parsed.chinese || '';
+    } catch (e) {
+        console.error('Failed to parse analysis JSON:', e);
+        // Fallback: dump everything in english column
+        englishContent = responseText;
+    }
 
     // 6. Log to Google Sheets
     const spreadsheetId = process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID;
@@ -62,11 +84,14 @@ Follow the structure: 1. Executive Summary, 2. Triangular Analysis, 3. Support/R
             now.getMinutes().toString().padStart(2, '0');
 
         const rowData = [
-            id, // Column A: ID
-            analysis // Column B: Formatted Report
+            id,              // Column A: ID
+            englishContent,  // Column B: English
+            chineseContent   // Column C: Chinese
         ];
-        await appendToSheet(spreadsheetId, 'spx_analysis_log_01!A:B', [rowData]);
+        await appendToSheet(spreadsheetId, 'spx_analysis_log_01!A:C', [rowData]);
     }
 
-    return analysis;
+    // Return the object so the API/Cron can use it structurally if needed, 
+    // or just return the english part as legacy or the full object.
+    return { english: englishContent, chinese: chineseContent };
 }
