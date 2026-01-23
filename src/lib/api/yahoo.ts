@@ -1,8 +1,14 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import path from 'path';
+import yahooFinance from 'yahoo-finance2';
 
-const execAsync = promisify(exec);
+function getYf() {
+    // Robustly handle CommonJS vs ESM import interop
+    // In some environments, the default export is nested in .default
+    return (yahooFinance as any).default || yahooFinance;
+}
+
+const yf = getYf();
+// Suppress the "Update available" warning which clogs logs and can confuse parsers
+yf.suppressNotices(['yahooSurvey']);
 
 export interface MarketQuote {
     symbol: string;
@@ -20,48 +26,33 @@ const TICKER_CONFIG = [
     { symbol: 'QQQ', label: 'Nasdaq 100' },
 ];
 
-async function runYahooScript(mode: string, ...args: string[]) {
-    const scriptPath = path.join(process.cwd(), 'src', 'lib', 'scripts', 'fetch_yahoo.py');
-    // Ensure we run with the same node binary
-    const command = `python "${scriptPath}" ${mode} ${args.map(a => `"${a}"`).join(' ')}`;
-
-    try {
-        const { stdout, stderr } = await execAsync(command);
-        if (stderr && stderr.trim()) {
-            // Sometimes libs print warnings to stderr, check if stdout is valid JSON first
-        }
-        return JSON.parse(stdout);
-    } catch (error: any) {
-        console.error('Yahoo script error:', error.message, error.stderr);
-        throw error;
-    }
-}
-
 export async function getMarketIndices(): Promise<MarketQuote[]> {
     try {
-        const symbols = TICKER_CONFIG.map(c => c.symbol).join(',');
-        const rawQuotes = await runYahooScript('quote', symbols);
-
-        // rawQuotes is array of quote objects
-        // We need to map back to our config order or find by symbol
-        return TICKER_CONFIG.map(config => {
-            const quote = rawQuotes.find((q: any) => q.symbol === config.symbol);
-            if (!quote) return {
-                symbol: config.displaySymbol || config.symbol,
-                label: config.label,
-                currentPrice: 0,
-                change: 0,
-                percentChange: 0
-            };
-
-            return {
-                symbol: config.displaySymbol || config.symbol,
-                label: config.label,
-                currentPrice: quote.regularMarketPrice || 0,
-                change: quote.regularMarketChange || 0,
-                percentChange: quote.regularMarketChangePercent || 0,
-            };
-        });
+        const quotes = await Promise.all(
+            TICKER_CONFIG.map(async (config) => {
+                try {
+                    const quote = await yf.quote(config.symbol);
+                    return {
+                        symbol: config.displaySymbol || config.symbol,
+                        label: config.label,
+                        currentPrice: quote.regularMarketPrice || 0,
+                        change: quote.regularMarketChange || 0,
+                        percentChange: quote.regularMarketChangePercent || 0,
+                    };
+                } catch (e) {
+                    console.error(`Failed to fetch quote for ${config.symbol}`, e);
+                    // Return empty/zero object on failure to avoid breaking the whole page
+                    return {
+                        symbol: config.displaySymbol || config.symbol,
+                        label: config.label,
+                        currentPrice: 0,
+                        change: 0,
+                        percentChange: 0
+                    };
+                }
+            })
+        );
+        return quotes;
     } catch (error) {
         console.error('Error fetching market indices from Yahoo:', error);
         return [];
@@ -81,11 +72,19 @@ export async function getTechnicalIndicators(symbol: string): Promise<TechnicalI
         const end = new Date();
         const start = new Date();
         start.setDate(end.getDate() - 400); // 400 days ago to be safe for trading days
-        const startDateStr = start.toISOString().split('T')[0];
 
-        const result = await runYahooScript('historical', symbol, startDateStr);
+        const queryOptions = { period1: start, period2: end, interval: '1d' as const };
 
-        // Extract close prices
+        let result: any[] = [];
+        try {
+            result = await yf.historical(symbol, queryOptions);
+        } catch (e) {
+            console.error(`Failed to fetch history for ${symbol}`, e);
+            return null;
+        }
+
+        // Extract close prices, result is sorted by date ascending usually, but ensure it.
+        // Yahoo returns newest last.
         const closes = result.map((quote: any) => quote.close).filter((c: any): c is number => typeof c === 'number');
 
         if (closes.length < 200) {
