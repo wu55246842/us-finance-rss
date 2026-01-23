@@ -1,4 +1,4 @@
-import { getBlogPostById, beautifyBlogContent } from '@/lib/api/blog';
+import { getBlogPostById } from '@/lib/api/blog';
 import { format } from 'date-fns';
 import { ArrowLeft, Calendar, Clock, Share2, Youtube, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
@@ -47,12 +47,36 @@ export default async function BlogPostPage({ params }: Props) {
     const youtubeId = post.youtubeLink ? getYoutubeId(post.youtubeLink) : null;
 
     // Beautify content if not already an AI analysis post
-    const beautifiedContent = post.type === 'ai_analysis'
-        ? post.content
-        : await beautifyBlogContent(post.content);
+    const beautifiedContent = post.content;
+
+    const articleJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'NewsArticle',
+        headline: post.title,
+        datePublished: new Date(post.time).toISOString(),
+        dateModified: new Date(post.time).toISOString(),
+        author: {
+            '@type': 'Organization',
+            name: 'Financea',
+            url: 'https://financea.me',
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: 'Financea',
+            logo: {
+                '@type': 'ImageObject',
+                url: 'https://financea.me/logo.svg',
+            },
+        },
+        description: post.content.substring(0, 160),
+    };
 
     return (
         <div className="min-h-screen bg-background pb-20">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+            />
             {/* Header / Navigation */}
             <div className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
                 <div className="container mx-auto flex h-16 max-w-4xl items-center px-4 justify-between">

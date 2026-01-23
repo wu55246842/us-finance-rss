@@ -33,6 +33,9 @@ Provide a detailed summary of the bullish and bearish factors for both indices.
             model: 'perplexity-fast',
         });
 
+        // Add 5 second delay to ensure consistency
+        await new Promise(resolve => setTimeout(resolve, 10000));
+
         console.log('Research Findings received. Length:', researchFindings.length);
 
         // 3. Use Gemini to write a professional, high-value blog post

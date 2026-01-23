@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: '%s | US Markets & Macro Hub'
   },
   description: 'Aggregating US stock market news, individual stock updates (AAPL, etc.), macro economic data, Fed news, and official government reports.',
-  keywords: ['US markets', 'stock market news', 'macroeconomic data', 'Fed news', 'financial news aggregator', 'American stocks'],
+  keywords: ['US markets', 'stock market news', 'macroeconomic data', 'Fed news', 'financial news aggregator', 'American stocks', 'financea'],
   authors: [{ name: 'Financea Team' }],
   creator: 'Financea',
   publisher: 'Financea',
@@ -32,6 +32,14 @@ export const metadata: Metadata = {
     description: 'American Stock Market & Macroeconomic News Aggregator',
     url: 'https://financea.me',
     siteName: 'US Markets & Macro Hub',
+    images: [
+      {
+        url: '/og-image.png', // Fallback to a default OG image
+        width: 1200,
+        height: 630,
+        alt: 'US Markets & Macro Hub',
+      },
+    ],
     locale: 'en_US',
     type: 'website',
   },
@@ -39,6 +47,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'US Markets & Macro Hub',
     description: 'American Stock Market & Macroeconomic News Aggregator',
+    images: ['/og-image.png'],
   },
   alternates: {
     canonical: '/',
@@ -53,8 +62,42 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'US Markets & Macro Hub',
+    url: 'https://financea.me',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://financea.me/search?q={search_term_string}',
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
+  const organizationJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Financea',
+    url: 'https://financea.me',
+    logo: 'https://financea.me/logo.svg',
+    sameAs: [
+      'https://twitter.com/financea', // Placeholders for future social links
+      'https://github.com/financea',
+    ],
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+      </head>
       <body className={`${inter.className} min-h-screen flex flex-col bg-background text-foreground antialiased selection:bg-primary/20`}>
         <Script
           async

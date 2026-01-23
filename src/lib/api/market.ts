@@ -50,3 +50,64 @@ export async function getMarketIndices(): Promise<MarketQuote[]> {
         return [];
     }
 }
+
+export interface TechnicalIndicators {
+    rsi: number;
+    sma10: number;
+    sma50: number;
+    sma200: number;
+}
+
+export async function getTechnicalIndicators(symbol: string): Promise<TechnicalIndicators | null> {
+    if (!FINNHUB_API_KEY) return null;
+
+    try {
+        const indicators = ['rsi', 'sma'];
+        const resolutions = ['D'];
+
+        // Helper to fetch indicator
+        const fetchIndicator = async (indicator: string, timeperiod: number) => {
+            const url = `${FINNHUB_BASE_URL}/indicator?symbol=${symbol}&resolution=D&indicator=${indicator}&timeperiod=${timeperiod}&token=${FINNHUB_API_KEY}`;
+            const res = await fetch(url);
+            if (!res.ok) return null;
+            const data = await res.json();
+            return data.o && data.o.length > 0 ? data.o[data.o.length - 1] : null;
+        };
+
+        const [rsi, sma10, sma50, sma200] = await Promise.all([
+            fetchIndicator('rsi', 14),
+            fetchIndicator('sma', 10),
+            fetchIndicator('sma', 50),
+            fetchIndicator('sma', 200),
+        ]);
+
+        return {
+            rsi: rsi || 0,
+            sma10: sma10 || 0,
+            sma50: sma50 || 0,
+            sma200: sma200 || 0,
+        };
+    } catch (error) {
+        console.error(`Error fetching indicators for ${symbol}:`, error);
+        return null;
+    }
+}
+
+export async function getMarketNews(symbol: string): Promise<string[]> {
+    if (!FINNHUB_API_KEY) return [];
+
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+        const url = `${FINNHUB_BASE_URL}/company-news?symbol=${symbol}&from=${lastWeek}&to=${today}&token=${FINNHUB_API_KEY}`;
+        const res = await fetch(url);
+        if (!res.ok) return [];
+        const data = await res.json();
+
+        return data.slice(0, 5).map((item: any) => item.headline);
+    } catch (error) {
+        console.error(`Error fetching news for ${symbol}:`, error);
+        return [];
+    }
+}

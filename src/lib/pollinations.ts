@@ -73,3 +73,6 @@ export async function generateText({
         throw error;
     }
 }
+
+// Alias for my new API to avoid breaking it
+export const generateAnalysis = generateText;
