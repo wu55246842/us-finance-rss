@@ -1,0 +1,23 @@
+name: Daily Market Analysis
+
+on:
+  schedule:
+    # Runs at 23:00 UTC (which is morning/daytime in Asia/US depending on offset)
+    # Adjust as needed. Vercel cron was 0 23,5,11 * * *
+    - cron: '0 23 * * *'
+  workflow_dispatch: # Allows manual triggering from GitHub UI
+
+jobs:
+  trigger-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel Cron API
+        run: |
+          # Replace with your actual deployment URL or configured domain
+          curl -X GET "https://us-finance-rss.vercel.app/api/cron" \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+          
+      - name: Trigger AI Blog Update
+        run: |
+          curl -X GET "https://us-finance-rss.vercel.app/api/cron/update-ai-blog" \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

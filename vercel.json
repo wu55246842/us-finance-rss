@@ -1,12 +1,1 @@
-{
-    "crons": [
-        {
-            "path": "/api/cron/update-ai-blog",
-            "schedule": "0 23,5,11 * * *"
-        },
-        {
-            "path": "/api/cron",
-            "schedule": "30 0,6,12 * * *"
-        }
-    ]
-}
+{}
