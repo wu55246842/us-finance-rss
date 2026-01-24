@@ -30,6 +30,13 @@ export function AIBlogHeader({ latestAnalyses, onSearch }: AIBlogHeaderProps) {
                     <h2 className="text-xl font-bold tracking-tight text-foreground">
                         Recent Market Reports
                     </h2>
+                    <Link
+                        href="/agents"
+                        className="ml-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all flex items-center gap-1.5"
+                    >
+                        <Sparkles size={12} fill="currentColor" />
+                        Try AI Agents
+                    </Link>
                 </div>
 
                 {/* Integrated Search */}

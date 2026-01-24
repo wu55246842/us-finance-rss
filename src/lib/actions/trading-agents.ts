@@ -24,7 +24,7 @@ export type WorkflowState = {
     error?: string;
 };
 
-export async function startTradingAnalysis(ticker: string): Promise<WorkflowState> {
+export async function startTradingAnalysis(ticker: string, language: string = 'English'): Promise<WorkflowState> {
     try {
         const startTime = new Date();
 
@@ -42,7 +42,10 @@ export async function startTradingAnalysis(ticker: string): Promise<WorkflowStat
         console.debug(`-----------------------------------------------------------------------------------------`);
         console.debug(indicators)
         // Stringify data for prompts
+        const langInstruction = `IMPORTANT: Output your entire response strictly in ${language} language.`;
+
         const technicalData = `
+        ${langInstruction}
         Ticker: ${ticker}
         Recent Price History (Last 5 days): ${JSON.stringify(history.slice(-5))}
         Technical Indicators: ${JSON.stringify(indicators)}
@@ -50,11 +53,13 @@ export async function startTradingAnalysis(ticker: string): Promise<WorkflowStat
         `;
 
         const fundamentalData = `
+        ${langInstruction}
         Ticker: ${ticker}
         Financial Summary: ${JSON.stringify(profile)}
         `;
 
         const sentimentData = `
+        ${langInstruction}
         Ticker: ${ticker}
         Recent News: ${JSON.stringify(news)}
         `;
@@ -83,6 +88,7 @@ export async function startTradingAnalysis(ticker: string): Promise<WorkflowStat
         // 3. Run Researcher (Debate)
         console.log(`Running researcher for ${ticker}...`);
         const debateContext = `
+        ${langInstruction}
         Synthesize the following reports:
         
         [TECHNICAL REPORT]
@@ -100,6 +106,7 @@ export async function startTradingAnalysis(ticker: string): Promise<WorkflowStat
         // 4. Run Reporter
         console.log(`Running reporter for ${ticker}...`);
         const reporterData = `
+        ${langInstruction}
         Create an investment decision memo based on this research synthesis:
         ${researcher.content}
         `;

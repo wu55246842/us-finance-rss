@@ -18,7 +18,7 @@ export function Hero() {
                     US Markets & Macro Hub
                 </h1>
                 <p className="text-lg text-muted-foreground md:text-xl max-w-[800px] mx-auto leading-relaxed">
-                    Real-time aggregation of US stock market news, economic data, institutional-grade market research, and Federal Reserve updates.
+                    Real-time aggregation of US stock market news, economic data, institutional-grade market research, and Federal Reserve updates. Powered by multi-agent AI analysis.
                 </p>
             </motion.div>
         </section>

@@ -57,4 +57,34 @@ This project incorporates features and code from [OpenStock](https://github.com/
 
 We thank the OpenStock contributors for their open-source work.
 
+## AI Agent Workflow
+
+The system uses a multi-agent orchestration logic to analyze financial data:
+
+1.  **Configuration Load**: Fetches dynamic settings from the PostgreSQL database.
+2.  **Data Gathering**: Fetches real-time data from Finnhub (Price, News, Fundamentals).
+3.  **Analyst Execution**: Runs 3 specialized agents (Technical, Fundamental, Sentiment) in a staggered queue to respect rate limits.
+4.  **Synthesis**: Runs the Researcher agent to debate the findings.
+5.  **Reporting**: Runs the Reporter agent to generate the final memo.
+
+### Visual Flow
+
+```mermaid
+graph TD
+    User[User Input] -->|startTraingAnalysis| Config[Load DB Config]
+    Config --> Data[Fetch Market Data]
+    Data --> Queue[Concurrency Queue]
+    
+    subgraph "Analyst Phase (Staggered)"
+        Queue -->|Slot 1| Tech[Technical Agent]
+        Tech -->|Wait 5s| Fund[Fundamental Agent]
+        Fund -->|Wait 5s| Sent[Sentiment Agent]
+        Sent -->|Wait| Done1[Analysts Done]
+    end
+    
+    Done1 --> Res[Researcher Agent]
+    Res --> Rep[Reporter Agent]
+    Rep --> Final[Investment Memo]
+```
+
 <!-- Trigger Vercel Deploy: 2025-12-03 17:54:31 -->

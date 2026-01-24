@@ -76,6 +76,37 @@ export async function generateText(prompt: string, systemPrompt: string, model: 
             await new Promise(res => setTimeout(res, delay));
         }
     }
+
+    // Fallback to Poixe API if Pollinations fails
+    if (process.env.POIXE_API_KEY) {
+        console.log("Switching to Poixe API fallback...");
+        try {
+            const poixeResp = await fetch("https://api.poixe.com/v1/chat/completions", {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${process.env.POIXE_API_KEY}`
+                },
+                body: JSON.stringify({
+                    "model": "gemini-2.5-flash",
+                    "messages": [
+                        { "role": "system", "content": systemPrompt },
+                        { "role": "user", "content": prompt }
+                    ]
+                })
+            });
+
+            if (poixeResp.ok) {
+                const data = await poixeResp.json();
+                return data.choices?.[0]?.message?.content || "Error: Empty response from Poixe";
+            } else {
+                console.error(`Poixe API Error: ${poixeResp.status} ${poixeResp.statusText}`);
+            }
+        } catch (e) {
+            console.error("Poixe Fallback failed:", e);
+        }
+    }
+
     return "Error generating analysis. Please try again.";
 }
 
