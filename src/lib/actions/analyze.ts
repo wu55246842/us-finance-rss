@@ -41,10 +41,11 @@ News Headlines:
 Analysis Framework: The "Triangular Methodology" (Macro + Technical + Micro).
 Output Format: JSON.
 Return a JSON object with two keys:
-1. "chinese": The analysis report in Chinese.
-2. "english": The analysis report in English.
+1. "chinese": The analysis report in Chinese (as a Markdown string).
+2. "english": The analysis report in English (as a Markdown string).
 
 Each report should follow the structure: 1. Executive Summary, 2. Triangular Analysis, 3. Support/Resistance, 4. Actionable Strategy, 5. Key Data Table.
+IMPORTANT: The value of "chinese" and "english" MUST be a single string containing Markdown formatting, NOT a nested JSON object.
 Ensure valid JSON format.
 `;
 
@@ -60,12 +61,24 @@ Ensure valid JSON format.
     let englishContent = '';
     let chineseContent = '';
 
+    // Helper to ensure content is string
+    const formatContent = (content: any): string => {
+        if (typeof content === 'string') return content;
+        if (typeof content === 'object' && content !== null) {
+            return Object.entries(content).map(([key, val]) => {
+                if (typeof val === 'object') return `## ${key}\n${formatContent(val)}`;
+                return `**${key}**: ${val}`;
+            }).join('\n\n');
+        }
+        return String(content);
+    };
+
     try {
         // Clean up potential markdown code blocks if the LLM wraps it
         const jsonStr = responseText.replace(/```json\n?|\n?```/g, '').trim();
         const parsed = JSON.parse(jsonStr);
-        englishContent = parsed.english || responseText;
-        chineseContent = parsed.chinese || '';
+        englishContent = formatContent(parsed.english || responseText);
+        chineseContent = formatContent(parsed.chinese || '');
     } catch (e) {
         console.error('Failed to parse analysis JSON:', e);
         // Fallback: dump everything in english column
