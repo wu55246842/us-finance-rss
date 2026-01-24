@@ -6,17 +6,17 @@ import { appendToSheet } from '@/lib/google-sheets';
 export async function generateSpxAnalysis() {
     // 1. Fetch Market Data
     const indices = await getMarketIndices();
-    const spx = indices.find(i => i.symbol === 'SPY'); // Using SPY as proxy for price action
+    const spx = indices.find(i => i.symbol === 'GSPC'); // Using GSPC as proxy for price action
     const vix = indices.find(i => i.symbol === 'VXX');
     const tnx = indices.find(i => i.symbol === 'TLT'); // Proxy or we can use another ticker
     const dxy = indices.find(i => i.symbol === 'UUP');
-    const ndx = indices.find(i => i.symbol === 'QQQ');
+    const ndx = indices.find(i => i.symbol === 'NDX');
 
     // 2. Fetch Technicals
-    const technicals = await getTechnicalIndicators('SPY');
+    const technicals = await getTechnicalIndicators('GSPC');
 
     // 3. Fetch News
-    const news = await getMarketNews('SPY');
+    const news = await getMarketNews('GSPC');
     const newsSummary = news.join('\n- ');
 
     if (!spx || !technicals) {

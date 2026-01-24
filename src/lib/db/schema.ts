@@ -7,3 +7,10 @@ export const blogPosts = pgTable('blog_posts', {
     type: text('type').default('manual').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+export const systemSettings = pgTable('system_settings', {
+    key: text('key').primaryKey(),
+    value: text('value').notNull(),
+    description: text('description'),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});

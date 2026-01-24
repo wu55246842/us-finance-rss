@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
     const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
-    const symbol = 'SPY';
+    const symbol = 'GSPC';
     // Last 200 days approx
     const to = Math.floor(Date.now() / 1000);
     const from = to - (300 * 24 * 60 * 60);
