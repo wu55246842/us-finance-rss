@@ -1,90 +1,105 @@
-# US Finance & Stock Market RSS Aggregator
+# Multi-Agents Stock Intelligent Analysis & Automated Quantitative Strategy
 
-A modern, responsive web application aggregating financial news and stock market data from various sources.
+A modern, high-performance financial intelligence platform that leverages **Multi-Agent AI** for deep stock analysis and **Automated Logic Engines** for quantitative strategy generation and backtesting.
 
-## Features
+## Key Features
 
-- **RSS Aggregation**: Real-time news from CNBC, MarketWatch, WSJ, and more.
-- **Market Overview**: Interactive charts and heatmaps powered by TradingView.
-- **Stock Search**: Global stock search using Finnhub API.
-- **Stock Details**: Comprehensive stock data, charts, and company profiles.
-- **Modern UI**: Fintech-inspired design with Dark Mode support.
+### 🧠 Multi-Agent Stock Analysis
+- **Technical Analyst**: Analyzes charts, RSI, MACD, and price action.
+- **Fundamental Analyst**: Reviews earnings, P/E ratios, and balance sheets.
+- **Sentiment Analyst**: Scans news and market sentiment.
+- **Researcher & Reporter**: Synthesizes conflicting data into a cohesive investment memo.
+- **Orchestration**: Staggered execution with DB-backed concurrency management.
 
-## Tech Stack
+### ⚡ Automated Quantitative Strategy
+- **Natural Language to Code**: Type "Buy when RSI < 30" and get executable Strategy Code instantly.
+- **Client-Side Engine**: Strategies run 100% locally in the browser for privacy and speed.
+- **Backtesting & Verification**:
+  - **10-Year Historical Data**: Instant validation against long-term SPX/Stock history.
+  - **Dynamic Tracing**: Auto-plots custom indicators (SMA, RSI, BB) on the chart.
+  - **Interactive Charting**: Visual Buy/Sell markers and P&L analysis.
 
-- **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4, Framer Motion
-- **Data**: RSS Parser, Finnhub API
-- **Components**: shadcn/ui (adapted), Lucide React
+### 📊 Market Intelligence
+- **Real-time News**: Aggregated from major financial outlets via RSS.
+- **Global Stock Search**: Powered by Finnhub.
+- **Professional UI**: Fintech-grade design with glassmorphism and data visualization.
+
+---
 
 ## Getting Started
 
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/your-username/us-finance-rss.git
-    cd us-finance-rss
-    ```
+### 1. Installation
 
-2.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
+```bash
+git clone https://github.com/your-username/us-finance-rss.git
+cd us-finance-rss
+npm install
+```
 
-3.  **Configure Environment Variables**:
-    Create a `.env.local` file in the root directory and add your Finnhub API key:
-    ```env
-    NEXT_PUBLIC_FINNHUB_API_KEY=your_finnhub_api_key_here
-    FINNHUB_API_KEY=your_finnhub_api_key_here
-    ```
+### 2. Environment Configuration
 
-4.  **Run the development server**:
-    ```bash
-    npm run dev
-    ```
+Create a `.env.local` file in the root directory. This project requires several API keys to function fully.
 
-5.  Open [http://localhost:3000](http://localhost:3000) with your browser.
+#### Required Keys
 
-## License & Credits
+| Variable | Description | Where to get it |
+| :--- | :--- | :--- |
+| `FINNHUB_API_KEY` | **Core Market Data**. Used for real-time stock prices and profiles. | [Finnhub.io](https://finnhub.io/) |
+| `NEXT_PUBLIC_FINNHUB_API_KEY` | Public key for client-side widgets. Same as above. | [Finnhub.io](https://finnhub.io/) |
+| `DATABASE_URL` | **PostgreSQL Connection**. Used for system settings and agent concurrency locks. | [Neon / Supabase](https://neon.tech) |
 
-This project is licensed under the **AGPL-3.0 License**.
+#### AI Provider Keys (At least one required)
 
-### OpenStock Integration
-This project incorporates features and code from [OpenStock](https://github.com/Open-Dev-Society/OpenStock), which is licensed under AGPL-3.0.
-- **Stock Search & Details**: Adapted from OpenStock's implementation.
-- **TradingView Widgets**: Integrated from OpenStock's component library.
-- **UI Components**: Selected components adapted from OpenStock (shadcn/ui based).
+| Variable | Description | Where to get it |
+| :--- | :--- | :--- |
+| `POLLINATIONS_API_KEY` | **Primary AI**. Free tier available. Used for fast text generation. | [Pollinations.ai](https://pollinations.ai/) |
+| `POIXE_API_KEY` | **Fallback AI**. Optimized for lower latency. | [Poixe](https://poixe.com) |
+| `OPENROUTER_API_KEY` | **Premium AI**. Access to GPT-4, Claude 3, etc. | [OpenRouter](https://openrouter.ai) |
 
-We thank the OpenStock contributors for their open-source work.
+#### Optional Extensions
 
-## AI Agent Workflow
+| Variable | Description | Usage |
+| :--- | :--- | :--- |
+| `GOOGLE_PRIVATE_KEY` | **Google Service Account Key**. For syncing data to Sheets. | Google Cloud Console |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Service Account Email Address. | Google Cloud Console |
+| `NEXT_PUBLIC_GOOGLE_SHEET_ID` | The ID of the Google Sheet to write data to. | Browser URL of your Sheet |
+| `NEXT_PUBLIC_GOOGLE_SHEET_GID` | The Grid ID (Tab ID) of the specific sheet. | Browser URL (`gid=0`) |
+| `CRON_SECRET` | Secret to protect scheduled cron jobs. | Generate a random string |
 
-The system uses a multi-agent orchestration logic to analyze financial data:
+### 3. Running the App
 
-1.  **Configuration Load**: Fetches dynamic settings from the PostgreSQL database.
-2.  **Data Gathering**: Fetches real-time data from Finnhub (Price, News, Fundamentals).
-3.  **Analyst Execution**: Runs 3 specialized agents (Technical, Fundamental, Sentiment) in a staggered queue to respect rate limits.
-4.  **Synthesis**: Runs the Researcher agent to debate the findings.
-5.  **Reporting**: Runs the Reporter agent to generate the final memo.
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
 
-### Visual Flow
+---
+
+## Architecture
 
 ```mermaid
 graph TD
-    User[User Input] -->|startTraingAnalysis| Config[Load DB Config]
-    Config --> Data[Fetch Market Data]
-    Data --> Queue[Concurrency Queue]
+    User[User Input] -->|NL Prompt| Generator[Strategy Generator]
+    Generator -->|JS Code| ClientEngine[Browser Quant Engine]
     
-    subgraph "Analyst Phase (Staggered)"
-        Queue -->|Slot 1| Tech[Technical Agent]
-        Tech -->|Wait 5s| Fund[Fundamental Agent]
-        Fund -->|Wait 5s| Sent[Sentiment Agent]
-        Sent -->|Wait| Done1[Analysts Done]
+    subgraph "Client Side"
+        ClientEngine -->|Fetch| History[10y Market Data]
+        ClientEngine -->|Execute| Backtest[Backtest Loop]
+        Backtest -->|Render| Chart[Lightweight Chart]
+        Backtest -->|Trace| Indicators[Dynamic SMA/RSI]
     end
     
-    Done1 --> Res[Researcher Agent]
-    Res --> Rep[Reporter Agent]
-    Rep --> Final[Investment Memo]
+    subgraph "Server Side Agents"
+        User -->|Analyze| Orchestrator[Agent Orchestrator]
+        Orchestrator --> Tech[Technical Agent]
+        Orchestrator --> Fund[Fundamental Agent]
+        Orchestrator --> Sent[Sentiment Agent]
+        Tech & Fund & Sent --> Reporter[Final Report]
+    end
 ```
 
-<!-- Trigger Vercel Deploy: 2025-12-03 17:54:31 -->
+## License
+
+This project is licensed under the **AGPL-3.0 License**.
+
+incorporates features from [OpenStock](https://github.com/Open-Dev-Society/OpenStock).
