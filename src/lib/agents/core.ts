@@ -1,6 +1,6 @@
 import { AGENT_PROMPTS } from './prompts';
 
-const POLLINATIONS_API_URL = 'https://text.pollinations.ai/';
+const POLLINATIONS_API_URL = 'https://text.pollinations.ai/openai';
 
 export type AgentRole = 'technical' | 'fundamental' | 'sentiment' | 'researcher' | 'reporter';
 

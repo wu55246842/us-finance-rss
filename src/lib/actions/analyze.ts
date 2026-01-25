@@ -5,18 +5,19 @@ import { appendToSheet } from '@/lib/google-sheets';
 
 export async function generateSpxAnalysis() {
     // 1. Fetch Market Data
+    // 1. Fetch Market Data
     const indices = await getMarketIndices();
-    const spx = indices.find(i => i.symbol === 'GSPC'); // Using GSPC as proxy for price action
-    const vix = indices.find(i => i.symbol === 'VXX');
+    const spx = indices.find(i => i.symbol === 'SPX500') || indices.find(i => i.symbol === '^GSPC'); // Handle potential displaySymbol changes
+    const vix = indices.find(i => i.symbol === 'VIX' || i.symbol === '^VIX');
     const tnx = indices.find(i => i.symbol === 'TLT'); // Proxy or we can use another ticker
-    const dxy = indices.find(i => i.symbol === 'UUP');
-    const ndx = indices.find(i => i.symbol === 'NDX');
+    const dxy = indices.find(i => i.symbol === 'DXY' || i.symbol === 'DX-Y.NYB');
+    const ndx = indices.find(i => i.symbol === 'NDX' || i.symbol === '^NDX');
 
     // 2. Fetch Technicals
-    const technicals = await getTechnicalIndicators('GSPC');
+    const technicals = await getTechnicalIndicators('^GSPC');
 
     // 3. Fetch News
-    const news = await getMarketNews('GSPC');
+    const news = await getMarketNews('^GSPC');
     const newsSummary = news.join('\n- ');
 
     if (!spx || !technicals) {
@@ -49,7 +50,6 @@ IMPORTANT: The value of "chinese" and "english" MUST be a single string containi
 Ensure valid JSON format.
 `;
 
-    // 5. Call Pollinations AI
     // 5. Call Pollinations AI
     const responseText = await generateAnalysis({
         messages: [

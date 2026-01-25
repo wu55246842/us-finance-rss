@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { createChart, ColorType, IChartApi, CandlestickSeries, LineSeries } from 'lightweight-charts';
+import { createChart, ColorType, IChartApi, ISeriesApi } from 'lightweight-charts';
 import { getPriceHistory, PriceBar } from '@/lib/api/market';
 
 interface PriceChartProps {
@@ -155,7 +155,7 @@ export function PriceChart({ ticker }: PriceChartProps) {
         });
         chartRef.current = chart;
 
-        const candlestickSeries = chart.addSeries(CandlestickSeries, {
+        const candlestickSeries = chart.addCandlestickSeries({
             upColor: '#10b981',
             downColor: '#ef4444',
             borderVisible: false,
@@ -163,9 +163,9 @@ export function PriceChart({ ticker }: PriceChartProps) {
             wickDownColor: '#ef4444',
         });
 
-        const sma10Series = chart.addSeries(LineSeries, { color: '#3b82f6', lineWidth: 1, title: 'SMA 10' });
-        const sma50Series = chart.addSeries(LineSeries, { color: '#f97316', lineWidth: 1, title: 'SMA 50' });
-        const sma200Series = chart.addSeries(LineSeries, { color: '#8b5cf6', lineWidth: 1, title: 'SMA 200' });
+        const sma10Series = chart.addLineSeries({ color: '#3b82f6', lineWidth: 1, title: 'SMA 10' });
+        const sma50Series = chart.addLineSeries({ color: '#f97316', lineWidth: 1, title: 'SMA 50' });
+        const sma200Series = chart.addLineSeries({ color: '#8b5cf6', lineWidth: 1, title: 'SMA 200' });
 
         const chartData = data.map(item => ({
             time: item.date.split('T')[0],
@@ -194,7 +194,7 @@ export function PriceChart({ ticker }: PriceChartProps) {
         });
         rsiChartRef.current = rsiChart;
 
-        const rsiSeries = rsiChart.addSeries(LineSeries, {
+        const rsiSeries = rsiChart.addLineSeries({
             color: '#d946ef',
             lineWidth: 1,
             title: 'RSI 14'
@@ -202,11 +202,12 @@ export function PriceChart({ ticker }: PriceChartProps) {
         rsiSeries.setData(calculateRSI(data, 14) as any);
 
         // Add 70/30 lines
-        const rsiOverbought = rsiChart.addSeries(LineSeries, { color: '#9ca3af', lineWidth: 1, lineStyle: 2, title: '70' });
-        const rsiOversold = rsiChart.addSeries(LineSeries, { color: '#9ca3af', lineWidth: 1, lineStyle: 2, title: '30' });
+        const rsiOverbought = rsiChart.addLineSeries({ color: '#9ca3af', lineWidth: 1, lineStyle: 2, title: '70' });
+        const rsiOversold = rsiChart.addLineSeries({ color: '#9ca3af', lineWidth: 1, lineStyle: 2, title: '30' });
 
         const rsiBaseData = data.map(d => ({ time: d.date.split('T')[0] }));
         rsiOverbought.setData(rsiBaseData.map(d => ({ ...d, value: 70 })) as any);
+        rsiOversold.setData(rsiBaseData.map(d => ({ ...d, value: 30 })) as any);
         rsiOversold.setData(rsiBaseData.map(d => ({ ...d, value: 30 })) as any);
 
 
