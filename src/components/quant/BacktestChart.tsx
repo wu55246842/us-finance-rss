@@ -1,17 +1,48 @@
 'use client';
 
-import { createChart, ColorType, ISeriesApi, IChartApi } from 'lightweight-charts';
+import {
+    createChart,
+    ColorType,
+    ISeriesApi,
+    IChartApi,
+    LineStyle,
+    LineWidth,
+} from 'lightweight-charts';
+
 import { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+
+
+// Compatible for v4 (number) and v5 (LineWidth union)
+type AnyLineWidth = number;
+type AnyLineStyle = number;
+
+function toLineWidth(v?: number): AnyLineWidth {
+    // v5 通常是 1|2|3|4，v4 是 number。这里兼容两者
+    const n = v ?? 1;
+    if (!Number.isFinite(n)) return 1;
+    if (n <= 1) return 1;
+    if (n === 2) return 2;
+    if (n === 3) return 3;
+    return 4;
+}
+
+function toLineStyle(v?: number): AnyLineStyle {
+    // LineStyle 在 v4/v5 都是数字枚举语义
+    const n = v ?? 0;
+    return Number.isFinite(n) ? n : 0;
+}
+
 
 export interface OverlayData {
     name: string;
     type: 'Line' | 'Histogram' | 'Area';
     data: { time: string; value: number }[];
     color?: string;
-    lineWidth?: number;
-    style?: number; // LineStyle
+    lineWidth?: LineWidth;     // ✅ 用库类型
+    style?: LineStyle;         // ✅ 用库类型
 }
+
 
 export interface PaneData {
     id: string;
@@ -108,10 +139,12 @@ export function BacktestChart({ symbol = '^GSPC', markers = [], overlays = [], p
         overlays.forEach(ov => {
             const line = mainChart.addLineSeries({
                 color: ov.color || '#2962FF',
-                lineWidth: ov.lineWidth || 1,
+                lineWidth: toLineWidth(ov.lineWidth) as any,
+                lineStyle: toLineStyle(ov.style) as any,
                 title: ov.name,
-                lineStyle: ov.style
+
             });
+
             line.setData(ov.data);
         });
 
@@ -140,10 +173,12 @@ export function BacktestChart({ symbol = '^GSPC', markers = [], overlays = [], p
                 } else {
                     const series = paneChart.addLineSeries({
                         color: s.color || '#d946ef',
-                        lineWidth: s.lineWidth || 1,
+                        lineWidth: toLineWidth(s.lineWidth) as any,
+                        lineStyle: toLineStyle(s.style) as any,
                         title: s.name,
-                        lineStyle: s.style
+
                     });
+
                     series.setData(s.data);
                 }
             });
