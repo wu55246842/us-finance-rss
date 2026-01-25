@@ -1,0 +1,17 @@
+name: "Cron: Update AI Blog"
+
+on:
+  schedule:
+    # 08:30 UTC+8 -> 00:30 UTC
+    # 20:30 UTC+8 -> 12:30 UTC
+    - cron: '30 0,12 * * *'
+  workflow_dispatch:
+
+jobs:
+  trigger-blog-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Update API
+        run: |
+          curl -X GET "https://financea.me/api/cron/update-ai-blog" \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

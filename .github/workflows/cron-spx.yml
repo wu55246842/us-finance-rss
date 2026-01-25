@@ -1,0 +1,17 @@
+name: "Cron: Analyze SPX"
+
+on:
+  schedule:
+    # 07:30 UTC+8 -> 23:30 UTC
+    # 17:30 UTC+8 -> 09:30 UTC
+    - cron: '30 9,23 * * *'
+  workflow_dispatch:
+
+jobs:
+  trigger-spx-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Analyze SPX API
+        run: |
+          curl -X GET "https://financea.me/api/analyze-spx" \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
