@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         const stocksToTest = universe.slice(0, 10);
 
         const results = [];
-        const token = process.env.FINNHUB_API_KEY ?? process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
+        const token = process.env.FINNHUB_API_KEY ?? process.env.FINNHUB_API_KEY;
 
         for (const stock of stocksToTest) {
             try {

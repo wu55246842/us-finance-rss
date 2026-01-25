@@ -45,7 +45,7 @@ Create a `.env.local` file in the root directory. This project requires several 
 | Variable | Description | Where to get it |
 | :--- | :--- | :--- |
 | `FINNHUB_API_KEY` | **Core Market Data**. Used for real-time stock prices and profiles. | [Finnhub.io](https://finnhub.io/) |
-| `NEXT_PUBLIC_FINNHUB_API_KEY` | Public key for client-side widgets. Same as above. | [Finnhub.io](https://finnhub.io/) |
+| `FINNHUB_API_KEY` | Public key for client-side widgets. Same as above. | [Finnhub.io](https://finnhub.io/) |
 | `DATABASE_URL` | **PostgreSQL Connection**. Used for system settings and agent concurrency locks. | [Neon / Supabase](https://neon.tech) |
 
 #### AI Provider Keys (At least one required)
