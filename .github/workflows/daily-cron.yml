@@ -13,11 +13,10 @@ jobs:
     steps:
       - name: Trigger Vercel Cron API
         run: |
-          # Replace with your actual deployment URL or configured domain
-          curl -X GET "https://us-finance-rss.vercel.app/api/cron" \
+          curl -X GET "https://financea.me/api/cron/update-ai-blog" \
           -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
           
       - name: Trigger AI Blog Update
         run: |
-          curl -X GET "https://us-finance-rss.vercel.app/api/cron/update-ai-blog" \
+          curl -X GET "https://financea.me/api/cron/update-ai-blog" \
           -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

@@ -42,7 +42,13 @@ export async function startTradingAnalysis(ticker: string, language: string = 'E
         console.debug(`-----------------------------------------------------------------------------------------`);
         console.debug(indicators)
         // Stringify data for prompts
-        const langInstruction = `IMPORTANT: Output your entire response strictly in ${language} language.`;
+        const langInstruction = `
+        IMPORTANT RULES:
+        1. Output your entire response STRICTLY in ${language} language.
+        2. Do NOT explain your reasoning or internal thought process. 
+        3. Do NOT preface the response with "The user asks..." or similar meta-commentary.
+        4. START DIRECTLY with the requested title or header.
+        `;
 
         const technicalData = `
         ${langInstruction}
