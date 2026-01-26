@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
-import { Languages } from 'lucide-react';
+import { Languages, Loader2, Sparkles } from 'lucide-react';
 
 interface BlogPostContentProps {
     content: string;
@@ -12,17 +12,62 @@ interface BlogPostContentProps {
 
 export function BlogPostContent({ content, chineseContent }: BlogPostContentProps) {
     const [language, setLanguage] = useState<'en' | 'zh'>('en');
+    const [aiChinese, setAiChinese] = useState<string | null>(null);
+    const [isTranslating, setIsTranslating] = useState(false);
 
-    // If no chinese content, force english or hide toggle
-    const hasChinese = !!chineseContent && chineseContent.trim().length > 0;
+    // Check if we have pre-rendered or AI-generated Chinese content
+    const hasChinese = (!!chineseContent && chineseContent.trim().length > 0) || !!aiChinese;
 
-    const displayContent = language === 'zh' && hasChinese ? chineseContent : content;
+    const handleTranslate = async () => {
+        if (hasChinese && !aiChinese) {
+            setLanguage('zh');
+            return;
+        }
+
+        setIsTranslating(true);
+        try {
+            const res = await fetch('/api/blog/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content })
+            });
+
+            if (!res.ok) throw new Error('Translation failed');
+            const data = await res.json();
+            setAiChinese(data.translatedText);
+            setLanguage('zh');
+        } catch (error) {
+            console.error('AI Translation error:', error);
+            alert('AI Translation failed. Please try again later.');
+        } finally {
+            setIsTranslating(false);
+        }
+    };
+
+    const displayContent = language === 'zh'
+        ? (aiChinese || (hasChinese ? chineseContent : content))
+        : content;
 
     return (
         <div className="space-y-8">
-            {/* Language Toggle */}
-            {hasChinese && (
-                <div className="flex justify-end">
+            {/* Language Toggle & Translation Button */}
+            <div className="flex justify-end gap-3">
+                {!hasChinese && (
+                    <button
+                        onClick={handleTranslate}
+                        disabled={isTranslating}
+                        className="flex items-center gap-2 px-4 py-1.5 text-sm font-bold rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg hover:shadow-indigo-500/20 transition-all hover:scale-105 disabled:opacity-50 disabled:grayscale"
+                    >
+                        {isTranslating ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Sparkles className="h-4 w-4" />
+                        )}
+                        {isTranslating ? 'AI Translating...' : 'AI Translate to Chinese'}
+                    </button>
+                )}
+
+                {hasChinese && (
                     <div className="inline-flex items-center rounded-lg border border-border bg-card p-1 shadow-sm">
                         <button
                             onClick={() => setLanguage('en')}
@@ -48,8 +93,8 @@ export function BlogPostContent({ content, chineseContent }: BlogPostContentProp
                             <span className="font-bold">中文</span> Chinese
                         </button>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
             {/* Markdown Content */}
             <div className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-relaxed">

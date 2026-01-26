@@ -1,6 +1,6 @@
 import { AGENT_PROMPTS } from './prompts';
 
-const POLLINATIONS_API_URL = 'https://text.pollinations.ai/';
+const POLLINATIONS_API_URL = 'https://gen.pollinations.ai/v1/chat/completions';
 
 export type AgentRole = 'technical' | 'fundamental' | 'sentiment' | 'researcher' | 'reporter';
 
@@ -37,9 +37,18 @@ export async function generateText(prompt: string, systemPrompt: string, model: 
 
     // 1. Pollinations (Priority 1)
     const pollinationsResult = await tryWithRetries("Pollinations", async () => {
+
+        const apiKey = process.env.POLLINATIONS_API_KEY;
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+
+        if (apiKey) {
+            headers['Authorization'] = `Bearer ${apiKey}`;
+        }
         const response = await fetch(POLLINATIONS_API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             body: JSON.stringify({
                 messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: prompt }],
                 model: model,
@@ -121,4 +130,26 @@ export async function runAgentAnalysis(role: AgentRole, data: string): Promise<A
         content,
         model: 'gemini-fast'
     };
+}
+
+/**
+ * Manual Test Script
+ * Run with: npx tsx --env-file=.env.local src/lib/agents/core.ts
+ */
+if (typeof window === 'undefined' && import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
+    (async () => {
+        console.log('🚀 Starting AI self-test...');
+        try {
+            const response = await generateText(
+                'Give me a 1-sentence summary of why high-pressing is effective.',
+                'You are a football tactician.',
+                'nova-fast'
+            );
+            console.log('\n--- AI Response ---');
+            console.log(response);
+            console.log('\n✅ Test completed successfully.');
+        } catch (error: any) {
+            console.error('\n❌ Test failed!', error.message);
+        }
+    })();
 }
