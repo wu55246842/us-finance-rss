@@ -103,3 +103,6 @@ graph TD
 This project is licensed under the **AGPL-3.0 License**.
 
 incorporates features from [OpenStock](https://github.com/Open-Dev-Society/OpenStock).
+
+<img width="1793" height="909" alt="760b0437-47ef-4316-b039-38fd4fa62608_image" src="https://github.com/user-attachments/assets/13bd95b0-4b43-4999-8e7e-0648ee7ea854" />
+
