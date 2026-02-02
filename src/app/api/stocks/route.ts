@@ -1,14 +1,43 @@
+import { promises as fs } from 'fs';
+import path from 'path';
 import { NextResponse } from 'next/server';
 
 // Interface for the ticker data structure from the source
 interface TickerData {
     symbol: string;
     name: string;
-    exchange: string;
-    assetType: string;
-    ipoDate: string;
-    delistingDate: string | null;
-    status: string;
+}
+
+let cachedTickers: TickerData[] | null = null;
+
+function parseTickerLine(line: string): TickerData | null {
+    const trimmed = line.trim();
+    if (!trimmed) return null;
+
+    const pipeParts = trimmed.split('|');
+    if (pipeParts.length >= 2) {
+        return { symbol: pipeParts[0].toUpperCase(), name: pipeParts[1].trim() };
+    }
+
+    const tabParts = trimmed.split('\t');
+    if (tabParts.length >= 2) {
+        return { symbol: tabParts[0].toUpperCase(), name: tabParts[1].trim() };
+    }
+
+    return { symbol: trimmed.toUpperCase(), name: trimmed };
+}
+
+async function loadTickers(): Promise<TickerData[]> {
+    if (cachedTickers) return cachedTickers;
+
+    const filePath = path.join(process.cwd(), 'src', 'data', 'all_tickers.txt');
+    const fileContents = await fs.readFile(filePath, 'utf8');
+    cachedTickers = fileContents
+        .split(/\r?\n/)
+        .map(parseTickerLine)
+        .filter((item): item is TickerData => Boolean(item));
+
+    return cachedTickers;
 }
 
 export async function GET(request: Request) {
@@ -21,15 +50,7 @@ export async function GET(request: Request) {
             return NextResponse.json([]);
         }
 
-        const response = await fetch('https://raw.githubusercontent.com/rreichel3/US-Stock-Symbols/main/all/all_tickers.json', {
-            next: { revalidate: 86400 }, // Cache upstream for 24 hours
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch stock tickers');
-        }
-
-        const data: TickerData[] = await response.json();
+        const data = await loadTickers();
 
         // Server-side filtering
         const filtered = data
@@ -46,6 +67,6 @@ export async function GET(request: Request) {
         return NextResponse.json(filtered);
     } catch (error) {
         console.error('Error fetching stock tickers:', error);
-        return NextResponse.json({ error: 'Failed to fetch stock tickers' }, { status: 500 });
+        return NextResponse.json([], { status: 200 });
     }
 }
