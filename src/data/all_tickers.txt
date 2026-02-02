@@ -1,0 +1,15 @@
+AAPL|Apple Inc.
+MSFT|Microsoft Corporation
+GOOGL|Alphabet Inc. Class A
+AMZN|Amazon.com, Inc.
+META|Meta Platforms, Inc.
+NVDA|NVIDIA Corporation
+TSLA|Tesla, Inc.
+BRK.B|Berkshire Hathaway Inc. Class B
+JPM|JPMorgan Chase & Co.
+V|Visa Inc.
+JNJ|Johnson & Johnson
+WMT|Walmart Inc.
+PG|Procter & Gamble Company
+MA|Mastercard Incorporated
+DIS|The Walt Disney Company
