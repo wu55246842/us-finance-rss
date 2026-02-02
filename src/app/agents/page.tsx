@@ -1,14 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { startTradingAnalysis, WorkflowState } from '@/lib/actions/trading-agents';
 import { AgentCard } from '@/components/agents/AgentCard';
 import { PriceChart } from '@/components/charts/PriceChart';
 import { AgentWorkflowExplainer } from '@/components/agents/AgentWorkflowExplainer';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { Search, Loader2, Sparkles, Languages } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/openstock/utils'; // Assuming this exists based on command.tsx
 
 const LANGUAGES = [
     { code: 'English', label: 'English', flag: '🇺🇸' },
@@ -17,6 +18,11 @@ const LANGUAGES = [
     { code: 'Spanish', label: 'Español', flag: '🇪🇸' },
 ];
 
+interface Ticker {
+    symbol: string;
+    name: string;
+}
+
 export default function AgentsPage() {
     const [ticker, setTicker] = useState('');
     const [activeTicker, setActiveTicker] = useState('');
@@ -24,10 +30,49 @@ export default function AgentsPage() {
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<WorkflowState | null>(null);
 
-    const handleSearch = async (e: React.FormEvent) => {
-        e.preventDefault();
+    // Autocomplete state
+    const [tickers, setTickers] = useState<Ticker[]>([]);
+    const [open, setOpen] = useState(false);
+    const [tickerLoading, setTickerLoading] = useState(true);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    // Fetch tickers on mount
+    useEffect(() => {
+        const fetchTickers = async () => {
+            try {
+                const res = await fetch('/api/stocks');
+                if (res.ok) {
+                    const data = await res.json();
+                    setTickers(data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch tickers:', error);
+            } finally {
+                setTickerLoading(false);
+            }
+        };
+
+        fetchTickers();
+    }, []);
+
+    // Close suggestions when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    const handleSearch = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         if (!ticker) return;
 
+        setOpen(false); // Close suggestions
         setActiveTicker(ticker.toUpperCase());
         setLoading(true);
         setResults(null);
@@ -40,6 +85,14 @@ export default function AgentsPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSelectTicker = (currentValue: string) => {
+        setTicker(currentValue.toUpperCase());
+        setOpen(false);
+        // Optional: auto-search on select? user might check language first.
+        // Let's keep it manual trigger or trigger immediately? 
+        // Instructions imply "fill" then "analyze". I'll just fill.
     };
 
     return (
@@ -70,16 +123,16 @@ export default function AgentsPage() {
                     </p>
                 </div>
 
-                {/* Search Bar & Language Selector - MOVED ABOVE EXPLAINER */}
+                {/* Search Bar & Language Selector */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                 >
-                    <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto relative group items-center">
+                    <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto relative group items-start z-50">
 
                         {/* Language Selector */}
-                        <div className="relative group/lang z-20 w-full md:w-auto">
+                        <div className="relative group/lang z-20 w-full md:w-auto h-14">
                             <div className="absolute -inset-1 bg-gradient-to-r from-primary to-cyan-500 rounded-lg blur opacity-0 group-hover/lang:opacity-25 transition duration-500" />
                             <select
                                 value={language}
@@ -96,35 +149,89 @@ export default function AgentsPage() {
                             </div>
                         </div>
 
-                        {/* Search Input */}
-                        <div className="relative flex-1 flex gap-2 w-full">
+                        {/* Search Input (Combobox) */}
+                        <div
+                            ref={wrapperRef}
+                            className="relative flex-1 w-full"
+                        >
                             <div className="absolute -inset-1 bg-gradient-to-r from-primary to-cyan-500 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
 
-                            <div className="relative flex-1">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                <Input
-                                    placeholder="Enter Stock Ticker (e.g., NVDA)"
-                                    className="pl-12 bg-card border-border focus:border-primary transition-all font-mono text-lg h-14 rounded-lg shadow-sm"
-                                    value={ticker}
-                                    onChange={(e) => setTicker(e.target.value)}
-                                />
+                            <div className="relative flex gap-2">
+                                <div className="relative flex-1 bg-card border border-border focus-within:border-primary rounded-lg shadow-sm transition-all h-14 flex items-center overflow-hidden">
+                                    <Search className="absolute left-4 z-10 h-5 w-5 text-muted-foreground" />
+                                    <Command
+                                        shouldFilter={false} // We handle filtering via fuzzy match manually if needed, or stick to default. 
+                                        // Actually, if we pass `tickers` to CommandList and filter there, we need shouldFilter=true (default). 
+                                        // But if the list is huge (all US stocks ~10k), performant rendering might be an issue.
+                                        // cmdk is usually fast.
+                                        className="bg-transparent border-none overflow-visible"
+                                    >
+                                        <CommandInput
+                                            placeholder="Enter Stock Ticker (e.g., NVDA)"
+                                            value={ticker}
+                                            onValueChange={(val) => {
+                                                setTicker(val);
+                                                setOpen(!!val);
+                                            }}
+                                            onFocus={() => {
+                                                if (ticker) setOpen(true);
+                                            }}
+                                            className="pl-12 font-mono text-lg h-14 bg-transparent border-none focus:ring-0 w-full"
+                                        />
+
+                                        <AnimatePresence>
+                                            {open && ticker.length > 0 && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 10, height: 0 }}
+                                                    animate={{ opacity: 1, y: 0, height: 'auto' }}
+                                                    exit={{ opacity: 0, y: 10, height: 0 }}
+                                                    className="absolute top-[calc(100%+8px)] left-0 w-full bg-popover/95 backdrop-blur-md text-popover-foreground rounded-lg border border-border shadow-2xl z-50 overflow-hidden"
+                                                >
+                                                    <CommandList className="max-h-[300px] overflow-y-auto custom-scrollbar p-1">
+                                                        <CommandEmpty className="p-4 text-sm text-muted-foreground text-center">
+                                                            {tickerLoading ? "Loading tickers..." : "No results found."}
+                                                        </CommandEmpty>
+                                                        <CommandGroup>
+                                                            {tickers
+                                                                .filter(t => t.symbol.startsWith(ticker.toUpperCase()) || t.name.toLowerCase().includes(ticker.toLowerCase()))
+                                                                .slice(0, 50) // Limit results for performance
+                                                                .map((t) => (
+                                                                    <CommandItem
+                                                                        key={t.symbol}
+                                                                        value={t.symbol}
+                                                                        onSelect={handleSelectTicker}
+                                                                        className="cursor-pointer aria-selected:bg-accent"
+                                                                    >
+                                                                        <div className="flex flex-col">
+                                                                            <span className="font-bold text-base">{t.symbol}</span>
+                                                                            <span className="text-xs text-muted-foreground truncate max-w-[200px]">{t.name}</span>
+                                                                        </div>
+                                                                    </CommandItem>
+                                                                ))}
+                                                        </CommandGroup>
+                                                    </CommandList>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </Command>
+                                </div>
+
+                                <Button
+                                    onClick={(e) => handleSearch(e)}
+                                    disabled={loading}
+                                    className="relative bg-primary hover:bg-primary/90 h-14 px-8 text-lg rounded-lg shadow-lg transition-all hover:scale-105 active:scale-95 text-primary-foreground z-10 shrink-0"
+                                >
+                                    {loading ? <Loader2 className="animate-spin" /> : "Analyze"}
+                                </Button>
                             </div>
-                            <Button
-                                type="submit"
-                                disabled={loading}
-                                className="relative bg-primary hover:bg-primary/90 h-14 px-8 text-lg rounded-lg shadow-lg transition-all hover:scale-105 active:scale-95 text-primary-foreground z-10"
-                            >
-                                {loading ? <Loader2 className="animate-spin" /> : "Analyze"}
-                            </Button>
                         </div>
-                    </form>
+                    </div>
                 </motion.div>
 
-                {/* Workflow Explainer - MOVED BELOW SEARCH */}
-                {/* Collapses when activeTicker is present OR loading is true */}
+                {/* Workflow Explainer */}
                 <AgentWorkflowExplainer collapsed={!!activeTicker || loading} />
 
-                {/* Main Content Grid - Show when activeTicker is present (either loading or done) */}
+                {/* Main Content Grid */}
                 {(activeTicker || loading) && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -167,7 +274,7 @@ export default function AgentsPage() {
                             <div className="space-y-6 lg:col-span-2">
                                 <h2 className="text-xl font-semibold text-slate-300 border-b border-slate-800 pb-2">Research & Decision</h2>
 
-                                {/* Price Chart - Always shows if activeTicker is present */}
+                                {/* Price Chart */}
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
