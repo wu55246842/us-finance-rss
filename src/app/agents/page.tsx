@@ -174,7 +174,7 @@ export default function AgentsPage() {
                             <div className="absolute -inset-1 bg-gradient-to-r from-primary to-cyan-500 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
 
                             <div className="relative flex gap-2">
-                                <div className="relative flex-1 bg-card border border-border focus-within:border-primary rounded-lg shadow-sm transition-all h-14 flex items-center overflow-hidden">
+                                <div className="relative flex-1 bg-card border border-border focus-within:border-primary rounded-lg shadow-sm transition-all h-14 flex items-center overflow-visible">
                                     <Search className="absolute left-4 z-10 h-5 w-5 text-muted-foreground" />
                                     <Command
                                         shouldFilter={false} // We handle filtering via fuzzy match manually if needed, or stick to default. 
