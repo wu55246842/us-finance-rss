@@ -33,27 +33,44 @@ export default function AgentsPage() {
     // Autocomplete state
     const [tickers, setTickers] = useState<Ticker[]>([]);
     const [open, setOpen] = useState(false);
-    const [tickerLoading, setTickerLoading] = useState(true);
+    const [tickerLoading, setTickerLoading] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
-    // Fetch tickers on mount
+    // Fetch tickers based on input
     useEffect(() => {
-        const fetchTickers = async () => {
+        if (!ticker) {
+            setTickers([]);
+            setTickerLoading(false);
+            return;
+        }
+
+        const controller = new AbortController();
+        const timeout = setTimeout(async () => {
+            setTickerLoading(true);
             try {
-                const res = await fetch('/api/stocks');
+                const res = await fetch(`/api/stocks?q=${encodeURIComponent(ticker)}`,
+                    { signal: controller.signal }
+                );
                 if (res.ok) {
                     const data = await res.json();
                     setTickers(data);
+                } else {
+                    setTickers([]);
                 }
             } catch (error) {
-                console.error('Failed to fetch tickers:', error);
+                if ((error as DOMException).name !== 'AbortError') {
+                    console.error('Failed to fetch tickers:', error);
+                }
             } finally {
                 setTickerLoading(false);
             }
-        };
+        }, 200);
 
-        fetchTickers();
-    }, []);
+        return () => {
+            controller.abort();
+            clearTimeout(timeout);
+        };
+    }, [ticker]);
 
     // Close suggestions when clicking outside
     useEffect(() => {
