@@ -17,6 +17,7 @@ const NAV_ITEMS = [
     { name: 'Blog', href: '/blog' },
     { name: 'Stocks', href: '/stocks/overview' },
     { name: 'Sources', href: '/sources' },
+    { name: 'MCP', href: '/mcp' },
 ];
 
 export function Header() {

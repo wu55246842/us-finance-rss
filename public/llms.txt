@@ -1,0 +1,37 @@
+# US Markets & Macro Hub (Financea)
+
+## Overview
+This website aggregates US stock market news, macroeconomic data, and provides AI-powered analysis for individual stocks.
+
+## For AI Agents & MCP Clients
+
+### MCP Endpoint
+This site provides a Model Context Protocol (MCP) endpoint via Server-Sent Events (SSE).
+
+- **Endpoint URL**: `/api/mcp`
+- **Protocol**: HTTP SSE (Server-Sent Events)
+- **Transport**: Standard MCP SSE Transport
+
+### Available Tools (via MCP)
+1.  **`analyze_stock`**
+    - **Description**: Runs a multi-agent AI analysis (Technical, Fundamental, Sentiment, Research) for a given stock ticker.
+    - **Arguments**: `ticker` (string, e.g., "NVDA"), `language` (optional string, default "English").
+    - **Returns**: A comprehensive JSON report with analysis from multiple perspectives.
+
+2.  **`get_price_history`**
+    - **Description**: Fetches historical OHLCV (Open, High, Low, Close, Volume) price data.
+    - **Arguments**: `ticker` (string), `days` (optional number, default 100).
+
+3.  **`get_market_news`**
+    - **Description**: Fetches the latest news headlines and summaries for a specific stock.
+    - **Arguments**: `ticker` (string).
+
+## Key Website Routes
+- `/`: Dashboard overview (Market indices, top stories).
+- `/agents`: AI Agent interface for interactive stock analysis.
+- `/stocks/[ticker]`: Detailed page for a specific stock (e.g., `/stocks/AAPL`).
+- `/markets`: Broader market overview.
+
+## Data Sources
+- **Price Data**: standard Yahoo Finance standard data.
+- **News**: Financial news aggregation.
