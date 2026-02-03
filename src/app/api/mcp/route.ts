@@ -46,7 +46,11 @@ export async function GET(req: NextRequest) {
 
     const stream = new ReadableStream({
         start(controller) {
-            transport.on("message", (message) => {
+            const transportEmitter = transport as unknown as {
+                on: (event: "message", handler: (message: unknown) => void) => void;
+            };
+
+            transportEmitter.on("message", (message) => {
                 const event = `event: message\ndata: ${JSON.stringify(message)}\n\n`;
                 controller.enqueue(new TextEncoder().encode(event));
             });
