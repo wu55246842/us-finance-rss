@@ -1,5 +1,4 @@
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import { type IncomingMessage, type ServerResponse } from "http";
 
 /**
  * A transport adapter to make Next.js Request/Response work with MCP SDK.
@@ -11,7 +10,7 @@ import { type IncomingMessage, type ServerResponse } from "http";
 
 export class NextjsSseTransport extends SSEServerTransport {
     constructor(endpoint: string, res: Response) {
-        super(endpoint, res as any); // Type assertion, we might not need to pass res if we override methods
+        super(endpoint, res as any);
     }
 
     // Actually, for Next.js App Router, it is easier to just Manually construct the SSE stream

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { mcpServer } from "@/lib/mcp";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { NextjsSseTransport } from "@/lib/mcp-transport";
 
 // We need a map to store active transports so we can route POST messages to them
 // In a serverless env (Vercel), this map might be cleared between requests if the lambda dies.
@@ -35,11 +35,11 @@ import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 // But we must work within Next.js.
 //
 // The Transport object needs to be persisted.
-const transports = new Map<string, SSEServerTransport>();
+const transports = new Map<string, NextjsSseTransport>();
 
 export async function GET(req: NextRequest) {
     // Start a new SSE connection
-    const transport = new SSEServerTransport("/api/mcp/message", new Response());
+    const transport = new NextjsSseTransport("/api/mcp/message", new Response());
 
     // The SDK's transport.start() wants a nice way to send headers.
     // We will manually construct the ReadableStream.
