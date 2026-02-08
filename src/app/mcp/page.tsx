@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 export default function MCPPage() {
     return (
-        <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
+        <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20 transition-colors duration-300">
             <div className="max-w-7xl mx-auto px-6 py-20 space-y-20">
 
                 {/* Header Section */}
@@ -39,7 +39,7 @@ export default function MCPPage() {
                     {/* Left: Explanation */}
                     <div className="space-y-8">
                         <div>
-                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2 text-foreground">
                                 <Globe className="text-primary" />
                                 What is MCP?
                             </h2>
@@ -50,11 +50,11 @@ export default function MCPPage() {
                         </div>
 
                         <div>
-                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2 text-foreground">
                                 <Terminal className="text-primary" />
                                 Connection Details
                             </h2>
-                            <Card className="bg-card/50 border-primary/20">
+                            <Card className="bg-card border-border shadow-sm">
                                 <CardHeader>
                                     <CardTitle className="text-lg">Server-Sent Events (SSE)</CardTitle>
                                     <CardDescription>Use this endpoint to connect via HTTP SSE.</CardDescription>
@@ -74,105 +74,180 @@ export default function MCPPage() {
                     </div>
 
                     {/* Right: Configuration Snippet */}
-                    <div className="relative group">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-primary to-cyan-500 rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-1000" />
-                        <Card className="relative bg-zinc-950 border-zinc-800 h-full">
-                            <CardHeader>
-                                <CardTitle>Claude Desktop Config</CardTitle>
-                                <CardDescription>Add this to your <code>claude_desktop_config.json</code></CardDescription>
+                    <div className="relative group col-span-1 lg:col-span-1 h-full">
+                        <div className="absolute -inset-0.5 bg-gradient-to-b from-primary/50 to-cyan-500/50 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 dark:opacity-20" />
+                        <Card className="relative bg-card/90 backdrop-blur-xl border-border h-full flex flex-col shadow-2xl dark:bg-zinc-950/90 dark:border-white/10">
+                            <CardHeader className="pb-4 border-b border-border/50 dark:border-white/5">
+                                <CardTitle className="flex items-center gap-2">
+                                    <Sparkles className="w-5 h-5 text-primary" />
+                                    Connect to Claude
+                                </CardTitle>
+                                <CardDescription>Follow these steps to enable real-time data.</CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <CodeCopyBlock
-                                    className="h-[300px]"
-                                    language="json"
-                                    code={`{
+                            <CardContent className="space-y-8 flex-1 overflow-visible pt-6">
+
+                                <div className="relative pl-6 border-l border-primary/20 hover:border-primary/50 transition-colors">
+                                    <div className="absolute -left-[5px] top-0 w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-background dark:ring-zinc-950" />
+                                    <h3 className="text-sm font-semibold text-foreground mb-3 leading-none">
+                                        Step 1: Save Relay Script
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground mb-4">
+                                        Create <code>mcp-relay.ts</code> anywhere on your PC.
+                                    </p>
+                                    <CodeCopyBlock
+                                        className="h-[200px] shadow-inner"
+                                        language="typescript"
+                                        filename="mcp-relay.ts"
+                                        code={`import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+
+// Use the production URL
+const REMOTE_URL = process.env.MCP_REMOTE_URL || "https://financea.me/api/mcp";
+
+async function main() {
+  const transport = new SSEClientTransport(new URL(REMOTE_URL));
+  const client = new Client({ name: "relay-client", version: "1.0.0" }, { capabilities: { sampling: {} } });
+  
+  console.error(\`Connecting to \${REMOTE_URL}...\`);
+  await client.connect(transport);
+  console.error("Connected.");
+
+  const server = new Server({ name: "relay-server", version: "1.0.0" }, { capabilities: { tools: {}, resources: {}, prompts: {} } });
+
+  server.setRequestHandler(ListToolsRequestSchema, () => client.listTools());
+  server.setRequestHandler(CallToolRequestSchema, (req) => client.callTool(req.params));
+  server.setRequestHandler(ListResourcesRequestSchema, () => client.listResources());
+  server.setRequestHandler(ReadResourceRequestSchema, (req) => client.readResource(req.params));
+  server.setRequestHandler(ListPromptsRequestSchema, () => client.listPrompts());
+  server.setRequestHandler(GetPromptRequestSchema, (req) => client.getPrompt(req.params));
+
+  const serverTransport = new StdioServerTransport();
+  await server.connect(serverTransport);
+}
+
+main().catch(console.error);`}
+                                    />
+                                </div>
+
+                                <div className="relative pl-6 border-l border-transparent">
+                                    <div className="absolute -left-[5px] top-0 w-2.5 h-2.5 rounded-full bg-muted ring-4 ring-background dark:bg-zinc-700 dark:ring-zinc-950" />
+                                    <h3 className="text-sm font-semibold text-foreground mb-3 leading-none">
+                                        Step 2: Configure Claude
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground mb-4">
+                                        Update <code>claude_desktop_config.json</code>
+                                    </p>
+                                    <CodeCopyBlock
+                                        className="h-[180px] shadow-inner"
+                                        language="json"
+                                        filename="config.json"
+                                        code={`{
   "mcpServers": {
     "us-finance": {
-      "command": "node", 
-      "args": [], 
-      "url": "https://financea.me/api/mcp"
+      "command": "npx",
+      "args": [
+        "-y",
+        "tsx",
+        "C:/path/to/mcp-relay.ts"
+      ]
     }
   }
 }`}
-                                />
-                                <p className="mt-4 text-xs text-muted-foreground">
-                                    *Note: Since this is a remote server, your client must support the <code>url</code> field for SSE connections.
-                                </p>
+                                    />
+                                    <p className="mt-3 text-[10px] text-muted-foreground font-mono">
+                                        * Replace path with the actual location of mcp-relay.ts
+                                    </p>
+                                </div>
+
                             </CardContent>
                         </Card>
                     </div>
                 </div>
 
                 {/* Tools Showcase */}
-                <div className="space-y-8">
-                    <div className="text-center">
-                        <h2 className="text-3xl font-bold">Available Tools</h2>
-                        <p className="text-muted-foreground mt-2">Capabilities your AI gains when connected.</p>
+                <div className="space-y-12">
+                    <div className="text-center space-y-4">
+                        <h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
+                            Supercharge Your Agent
+                        </h2>
+                        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                            By connecting, your AI gains direct access to these professional financial tools.
+                        </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <ToolCard
                             title="analyze_stock"
-                            desc="Runs a comprehensive multi-agent analysis (Technical, Fundamental, Sentiment) for any US stock."
+                            desc="Comprehensive multi-agent analysis covering Technicals, Fundamentals, and Sentiment."
                             args="ticker, language"
-                            icon={<Sparkles className="w-6 h-6 text-purple-500" />}
+                            icon={<Sparkles className="w-5 h-5 text-purple-500" />}
                         />
                         <ToolCard
                             title="get_price_history"
-                            desc="Fetches historical OHLCV price data for charting or trend analysis."
+                            desc="Precise OHLCV historical data for custom charting and trend analysis."
                             args="ticker, days"
-                            icon={<Database className="w-6 h-6 text-blue-500" />}
+                            icon={<Database className="w-5 h-5 text-blue-500" />}
                         />
                         <ToolCard
                             title="get_market_news"
-                            desc="Retrieves the latest headlines and news summaries for a specific company."
+                            desc="Real-time news feed aggregation for specific companies."
                             args="ticker"
-                            icon={<Globe className="w-6 h-6 text-green-500" />}
+                            icon={<Globe className="w-5 h-5 text-green-500" />}
                         />
                     </div>
                 </div>
 
                 {/* Resources Showcase (Calculated/Dynamic Data) */}
-                <div className="space-y-8">
-                    <div className="text-center">
-                        <h2 className="text-3xl font-bold">Available Resources</h2>
-                        <p className="text-muted-foreground mt-2">Live data streams your AI can subscribe to or read.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-1 gap-6 max-w-2xl mx-auto">
+                <div className="space-y-12">
+                    <div className="grid grid-cols-1 md:grid-cols-1 gap-6 max-w-3xl mx-auto">
                         <ToolCard
                             title="discussion://latest"
-                            desc="Returns the full context of today's AI Roundtable Discussion in structured JSON. Ideal for 'Agentic Engine Optimization' (AEO) where other agents need to understand the market sentiment."
+                            desc="Access the full transcript of today's AI Roundtable. Ideal for context-aware agents."
                             args="URI: discussion://latest"
-                            icon={<Terminal className="w-6 h-6 text-orange-500" />}
+                            icon={<Terminal className="w-5 h-5 text-orange-500" />}
+                            className="bg-orange-500/5 border-orange-500/20"
                         />
                     </div>
                 </div>
 
                 {/* LLM Direct Integration */}
-                <div className="space-y-8 pb-20">
-                    <div className="text-center">
-                        <h2 className="text-3xl font-bold">LLM Integration</h2>
-                        <p className="text-muted-foreground mt-2">
-                            Copy these definitions into Qwen, GPT-4, or any LLM's "Function Calling" setup.
+                <div className="space-y-10 pb-20 pt-10 border-t border-border">
+                    <div className="text-center space-y-2">
+                        <h2 className="text-2xl font-bold">For Custom Agents (standard LLMs)</h2>
+                        <p className="text-muted-foreground">
+                            Copy these function definitions for OpenAI or Qwen integration.
                         </p>
                     </div>
 
-                    <div className="max-w-3xl mx-auto">
-                        <Card className="bg-zinc-950 border-zinc-800">
-                            <CardHeader>
+                    <div className="max-w-4xl mx-auto">
+                        <Card className="bg-card border-border shadow-xl overflow-hidden dark:bg-zinc-950 dark:border-zinc-800">
+                            <CardHeader className="bg-muted/50 border-b border-border py-3 dark:bg-zinc-900/50 dark:border-white/5">
                                 <div className="flex justify-between items-center">
-                                    <div>
-                                        <CardTitle>OpenAI/Qwen Function Schema</CardTitle>
-                                        <CardDescription>JSON Schema for direct model integration</CardDescription>
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex gap-1.5 grayscale opacity-50 dark:grayscale-0 dark:opacity-100">
+                                            <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/50" />
+                                            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
+                                            <div className="w-2.5 h-2.5 rounded-full bg-green-500/20 border border-green-500/50" />
+                                        </div>
+                                        <CardTitle className="text-sm font-mono ml-2 text-muted-foreground">tools_schema.json</CardTitle>
                                     </div>
-                                    <Button variant="outline" size="sm" onClick={() => window.open('/api/mcp/schema', '_blank')}>
-                                        <ExternalLink className="w-4 h-4 mr-2" />
-                                        Raw JSON
+                                    <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => window.open('/api/mcp/schema', '_blank')}>
+                                        <ExternalLink className="w-3 h-3 mr-2" />
+                                        Open Raw
                                     </Button>
                                 </div>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="p-0">
                                 <SchemaLoader />
                             </CardContent>
                         </Card>
@@ -186,23 +261,23 @@ export default function MCPPage() {
 
 // Helper Components
 
-function ToolCard({ title, desc, args, icon }: { title: string, desc: string, args: string, icon: React.ReactNode }) {
+function ToolCard({ title, desc, args, icon, className }: { title: string, desc: string, args: string, icon: React.ReactNode, className?: string }) {
     return (
-        <Card className="hover:border-primary/50 transition-colors cursor-default bg-card/50">
+        <Card className={`group hover:-translate-y-1 hover:shadow-lg transition-all duration-300 bg-card border-border ${className}`}>
             <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 rounded-md bg-background border border-border">
+                    <div className="p-2.5 rounded-lg bg-muted group-hover:bg-primary/5 border border-border group-hover:border-primary/30 transition-colors">
                         {icon}
                     </div>
-                    <CardTitle className="font-mono text-lg">{title}</CardTitle>
+                    <CardTitle className="font-mono text-base group-hover:text-primary transition-colors">{title}</CardTitle>
                 </div>
             </CardHeader>
             <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground min-h-[40px]">{desc}</p>
-                <div className="pt-4 border-t border-border/50">
-                    <div className="flex gap-2 text-xs font-mono text-muted-foreground">
-                        <span className="uppercase text-primary/70">Args:</span>
-                        <span>{args}</span>
+                <p className="text-sm text-muted-foreground leading-relaxed min-h-[40px]">{desc}</p>
+                <div className="pt-4 border-t border-border">
+                    <div className="flex justify-between items-center text-xs font-mono text-muted-foreground/70">
+                        <span className="uppercase tracking-wider">Parameters</span>
+                        <span className="text-muted-foreground">{args}</span>
                     </div>
                 </div>
             </CardContent>
@@ -210,7 +285,7 @@ function ToolCard({ title, desc, args, icon }: { title: string, desc: string, ar
     );
 }
 
-function CodeCopyBlock({ code, language = 'text', className = '' }: { code: string, language?: string, className?: string }) {
+function CodeCopyBlock({ code, language = 'text', className = '', filename }: { code: string, language?: string, className?: string, filename?: string }) {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {
@@ -220,16 +295,32 @@ function CodeCopyBlock({ code, language = 'text', className = '' }: { code: stri
     };
 
     return (
-        <div className={`relative rounded-md bg-zinc-900 border border-zinc-800 p-4 font-mono text-sm overflow-auto custom-scrollbar ${className}`}>
-            <button
-                onClick={handleCopy}
-                className="absolute right-2 top-2 p-1.5 rounded-md hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
-            >
-                {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
-            </button>
-            <pre className="text-zinc-300">
-                <code>{code}</code>
-            </pre>
+        // Code blocks are always dark themed for readability
+        <div className={`relative rounded-xl bg-zinc-950 border border-zinc-800 overflow-hidden group/code ${className}`}>
+            {/* Mac-style Header */}
+            <div className="flex items-center justify-between px-4 py-2 bg-zinc-900/50 border-b border-white/5">
+                <div className="flex items-center gap-2">
+                    <div className="flex gap-1.5 opacity-50 group-hover/code:opacity-100 transition-opacity">
+                        <div className="w-2 h-2 rounded-full bg-red-500" />
+                        <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                    </div>
+                    {filename && <span className="text-[10px] text-zinc-500 font-mono ml-2">{filename}</span>}
+                </div>
+                <button
+                    onClick={handleCopy}
+                    className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"
+                >
+                    {copied ? <Check size={10} className="text-green-400" /> : <Copy size={10} />}
+                    <span>{copied ? 'Copied' : 'Copy'}</span>
+                </button>
+            </div>
+
+            <div className="p-4 overflow-auto custom-scrollbar h-[calc(100%-36px)]">
+                <pre className="text-sm font-mono text-zinc-300 leading-relaxed">
+                    <code>{code}</code>
+                </pre>
+            </div>
         </div>
     );
 }
@@ -245,6 +336,5 @@ function SchemaLoader() {
             .catch(err => setSchema('Failed to load schema: ' + err.message));
     }
 
-    return <CodeCopyBlock code={schema} language="json" className="h-[400px]" />;
+    return <CodeCopyBlock code={schema} language="json" className="h-[400px] border-none rounded-none" />;
 }
-
