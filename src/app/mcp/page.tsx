@@ -132,6 +132,23 @@ export default function MCPPage() {
                     </div>
                 </div>
 
+                {/* Resources Showcase (Calculated/Dynamic Data) */}
+                <div className="space-y-8">
+                    <div className="text-center">
+                        <h2 className="text-3xl font-bold">Available Resources</h2>
+                        <p className="text-muted-foreground mt-2">Live data streams your AI can subscribe to or read.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-1 gap-6 max-w-2xl mx-auto">
+                        <ToolCard
+                            title="discussion://latest"
+                            desc="Returns the full context of today's AI Roundtable Discussion in structured JSON. Ideal for 'Agentic Engine Optimization' (AEO) where other agents need to understand the market sentiment."
+                            args="URI: discussion://latest"
+                            icon={<Terminal className="w-6 h-6 text-orange-500" />}
+                        />
+                    </div>
+                </div>
+
             </div>
         </div>
     );
