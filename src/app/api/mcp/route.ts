@@ -38,44 +38,27 @@ import { NextjsSseTransport } from "@/lib/mcp-transport";
 const transports = new Map<string, NextjsSseTransport>();
 
 export async function GET(req: NextRequest) {
-    // Start a new SSE connection
-    const transport = new NextjsSseTransport("/api/mcp/message", new Response());
-
-    // The SDK's transport.start() wants a nice way to send headers.
-    // We will manually construct the ReadableStream.
+    const sessionId = crypto.randomUUID();
+    const transport = new NextjsSseTransport(sessionId);
+    transports.set(sessionId, transport);
 
     const stream = new ReadableStream({
-        start(controller) {
-            const transportEmitter = transport as unknown as {
-                on: (event: "message", handler: (message: unknown) => void) => void;
-            };
+        async start(controller) {
+            transport.setController(controller);
+            await transport.start();
+            await mcpServer.connect(transport as any);
 
-            transportEmitter.on("message", (message) => {
-                const event = `event: message\ndata: ${JSON.stringify(message)}\n\n`;
-                controller.enqueue(new TextEncoder().encode(event));
-            });
-
-            // Handle session ID init
-            // We can hook into the transport "start" or just send the "endpoint" event manually?
-            // SDK's SSEServerTransport sends an "endpoint" event with the POST URL.
-            // We should manually trigger that.
-
-            const sessionId = crypto.randomUUID();
-            transports.set(sessionId, transport);
-
-            // Standard MCP SSE init message
-            const endpointEvent = `event: endpoint\ndata: /api/mcp?sessionId=${sessionId}\n\n`;
-            controller.enqueue(new TextEncoder().encode(endpointEvent));
-
-            // Connect transport to server
-            mcpServer.connect(transport);
-
-            // Clean up on close
+            // Clean up on close - handle abort signal
             req.signal.addEventListener("abort", () => {
                 transports.delete(sessionId);
-                // transport.close(); 
-                mcpServer.close();
+                transport.close();
+                // We should ideally close the mcpServer connection too if possible, 
+                // but the SDK handles that via transport.onclose usually.
             });
+        },
+        cancel() {
+            transports.delete(sessionId);
+            transport.close();
         }
     });
 
@@ -104,27 +87,7 @@ export async function POST(req: NextRequest) {
 
     try {
         const body = await req.json();
-        await transport.handlePostMessage(req as any, {
-            // We need to mock the minimal node res/req expected by SDK or just pass the body?
-            // The SDK `handlePostMessage` usually takes (req, res, body?) or (req, res).
-            // Looking at SDK source, `handlePostMessage` usually reads the body from req.
-            // Since we already read it (req.json()), we might need to pass it or adapt.
-            //
-            // Actually, `handlePostMessage` is handling the *Incoming* JSON-RPC message.
-            // It basically just calls `this.onmessage(message)`.
-            // So we can technically just do:
-            // transport.activeRequest = ...
-            // transport.onmessage(body);
-        } as any);
-
-        // The SDK source:
-        // async handlePostMessage(req, res) { const body = ...; this.onmessage(body); ... }
-
-        // So let's bypass handlePostMessage and call generic handler if possible.
-        // Or just re-implement:
-
-        await (transport as any).onmessage(body);
-
+        await transport.handlePostMessage(body);
         return NextResponse.json({ status: "accepted" });
     } catch (err: any) {
         return NextResponse.json({ error: err.message }, { status: 500 });

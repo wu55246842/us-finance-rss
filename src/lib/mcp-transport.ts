@@ -1,22 +1,80 @@
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+// We define local types to avoid path resolution issues with the SDK
+// The structure matches standard JSON-RPC and MCP Transport interface.
 
-/**
- * A transport adapter to make Next.js Request/Response work with MCP SDK.
- * The SDK's SSEServerTransport expects standard Node.js req/res for `start()`.
- * But in Next.js App Router we handle `Request` and return `NextResponse` (or generic `Response`).
- * 
- * We will implement a custom way to handle the session.
- */
+export interface JSONRPCMessage {
+    jsonrpc: "2.0";
+    method?: string;
+    params?: unknown;
+    id?: string | number | null;
+    result?: unknown;
+    error?: {
+        code: number;
+        message: string;
+        data?: unknown;
+    };
+    [key: string]: unknown;
+}
 
-export class NextjsSseTransport extends SSEServerTransport {
-    constructor(endpoint: string, res: Response) {
-        super(endpoint, res as any);
+export interface Transport {
+    start(): Promise<void>;
+    close(): Promise<void>;
+    send(message: JSONRPCMessage): Promise<void>;
+    onmessage?: (message: JSONRPCMessage) => void;
+    onclose?: () => void;
+    onerror?: (error: Error) => void;
+}
+
+export class NextjsSseTransport implements Transport {
+    private _sessionId: string;
+    private _controller: ReadableStreamDefaultController | null = null;
+
+    constructor(sessionId: string) {
+        this._sessionId = sessionId;
     }
 
-    // Actually, for Next.js App Router, it is easier to just Manually construct the SSE stream
-    // than to try to force the SDK's Node.js specific transport class to work.
-    // The SDK currently focuses on Node.js `http` module.
+    /**
+     * Sets the stream controller so the transport can push messages to the client.
+     */
+    setController(controller: ReadableStreamDefaultController) {
+        this._controller = controller;
+    }
 
-    // So we will implement a lightweight transport in `route.ts` directly
-    // or just use the SDK's abstract class properly.
+    async start(): Promise<void> {
+        // Send the endpoint event to tell the client where to send POST messages
+        if (this._controller) {
+            const endpointEvent = `event: endpoint\ndata: /api/mcp?sessionId=${this._sessionId}\n\n`;
+            this._controller.enqueue(new TextEncoder().encode(endpointEvent));
+        }
+    }
+
+    async close(): Promise<void> {
+        if (this._controller) {
+            try {
+                this._controller.close();
+            } catch (e) {
+                console.error("Error closing controller", e);
+            }
+        }
+        if (this.onclose) {
+            this.onclose();
+        }
+    }
+
+    async send(message: JSONRPCMessage): Promise<void> {
+        if (this._controller) {
+            const event = `event: message\ndata: ${JSON.stringify(message)}\n\n`;
+            this._controller.enqueue(new TextEncoder().encode(event));
+        }
+    }
+
+    // This is called by the API route when a POST request comes in
+    async handlePostMessage(message: JSONRPCMessage): Promise<void> {
+        if (this.onmessage) {
+            this.onmessage(message);
+        }
+    }
+
+    onmessage?: (message: JSONRPCMessage) => void;
+    onclose?: () => void;
+    onerror?: (error: Error) => void;
 }
