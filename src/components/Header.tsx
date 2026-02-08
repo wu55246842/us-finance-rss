@@ -13,10 +13,10 @@ import SearchCommand from '@/components/openstock/SearchCommand';
 const NAV_ITEMS = [
     { name: 'Home', href: '/' },
     { name: 'AI Agents', href: '/agents' },
+    { name: 'Roundtable', href: '/chat' },
     { name: 'Quant', href: '/quant' },
     { name: 'Blog', href: '/blog' },
     { name: 'Stocks', href: '/stocks/overview' },
-    { name: 'Sources', href: '/sources' },
     { name: 'MCP', href: '/mcp' },
 ];
 

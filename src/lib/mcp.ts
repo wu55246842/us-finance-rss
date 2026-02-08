@@ -3,6 +3,9 @@ import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { z } from "zod";
 import { startTradingAnalysis } from "@/lib/actions/trading-agents";
 import { getPriceHistory, getMarketNews } from "@/lib/api/market";
+import { db } from "@/lib/db";
+import { discussionMessages, discussionThreads } from "@/lib/db/schema";
+import { desc, eq } from "drizzle-orm";
 
 // Create the MCP server
 export const mcpServer = new McpServer({
@@ -68,6 +71,63 @@ mcpServer.tool(
         };
     }
 );
+
+// Resource: Latest Discussion (AEO)
+mcpServer.resource(
+    "discussion",
+    "discussion://latest",
+    async (uri) => {
+        try {
+            // Find today's thread
+            const today = new Date().toISOString().split('T')[0];
+            const topic = `SPX Analysis - ${today}`;
+
+            const thread = await db.query.discussionThreads.findFirst({
+                where: eq(discussionThreads.topic, topic),
+            });
+
+            if (!thread) {
+                return {
+                    contents: [{
+                        uri: uri.href,
+                        text: JSON.stringify({ error: "No discussion found for today." })
+                    }]
+                };
+            }
+
+            const messages = await db.select().from(discussionMessages)
+                .where(eq(discussionMessages.threadId, thread.id))
+                .orderBy(discussionMessages.createdAt);
+
+            return {
+                contents: [{
+                    uri: uri.href,
+                    mimeType: "application/json",
+                    text: JSON.stringify({
+                        topic: thread.topic,
+                        summary: thread.summary,
+                        messages: messages.map(m => ({
+                            agent: m.agentName,
+                            role: m.agentRole,
+                            content: m.content,
+                            time: m.createdAt
+                        }))
+                    }, null, 2)
+                }]
+            };
+        } catch (error: any) {
+            return {
+                contents: [{
+                    uri: uri.href,
+                    text: JSON.stringify({ error: error.message })
+                }]
+            };
+        }
+    }
+);
+
+
+
 
 // Helper to handle Next.js Request for SSE
 // Note: The SDK's SSEServerTransport is designed for express/node http usually,

@@ -13,6 +13,7 @@ export function Footer() {
                     </div>
                     <div className="flex flex-wrap justify-center md:justify-end gap-x-6 gap-y-2 text-sm font-medium text-muted-foreground">
                         <Link href="/about" className="hover:text-primary transition-colors">About Us</Link>
+                        <Link href="/sources" className="hover:text-primary transition-colors">Sources</Link>
                         <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
                         <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
                         <Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link>

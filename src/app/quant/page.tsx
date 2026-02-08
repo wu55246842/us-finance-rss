@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, Play, Sparkles, Bot, Search } from 'lucide-react';
 import { BacktestChart } from '@/components/quant/BacktestChart';
+import { AgentDiscussion } from '@/components/quant/AgentDiscussion';
 
 const DEFAULT_CODE = `// Strategy: Buy if Price > 200 SMA and RSI < 30
 // Available: bar, position, sma(p), rsi(p), bb(p, k)
@@ -298,6 +299,11 @@ export default function QuantPage() {
                     <Button size="sm" variant="ghost" className="h-8 text-xs text-muted-foreground hidden md:flex" onClick={() => setTicker('^GSPC')}>SPX</Button>
                     <Button size="sm" variant="ghost" className="h-8 text-xs text-muted-foreground hidden md:flex" onClick={() => setTicker('BTC-USD')}>BTC</Button>
                 </div>
+            </div>
+
+            {/* Agent Discussion Panel - New Addition */}
+            <div className="w-full">
+                <AgentDiscussion />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
