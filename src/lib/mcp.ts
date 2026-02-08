@@ -1,5 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
+
 import { z } from "zod";
 import { startTradingAnalysis } from "@/lib/actions/trading-agents";
 import { getPriceHistory, getMarketNews } from "@/lib/api/market";
