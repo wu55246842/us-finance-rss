@@ -149,6 +149,36 @@ export default function MCPPage() {
                     </div>
                 </div>
 
+                {/* LLM Direct Integration */}
+                <div className="space-y-8 pb-20">
+                    <div className="text-center">
+                        <h2 className="text-3xl font-bold">LLM Integration</h2>
+                        <p className="text-muted-foreground mt-2">
+                            Copy these definitions into Qwen, GPT-4, or any LLM's "Function Calling" setup.
+                        </p>
+                    </div>
+
+                    <div className="max-w-3xl mx-auto">
+                        <Card className="bg-zinc-950 border-zinc-800">
+                            <CardHeader>
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <CardTitle>OpenAI/Qwen Function Schema</CardTitle>
+                                        <CardDescription>JSON Schema for direct model integration</CardDescription>
+                                    </div>
+                                    <Button variant="outline" size="sm" onClick={() => window.open('/api/mcp/schema', '_blank')}>
+                                        <ExternalLink className="w-4 h-4 mr-2" />
+                                        Raw JSON
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <SchemaLoader />
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+
             </div>
         </div>
     );
@@ -203,3 +233,18 @@ function CodeCopyBlock({ code, language = 'text', className = '' }: { code: stri
         </div>
     );
 }
+
+function SchemaLoader() {
+    const [schema, setSchema] = useState('Loading schema...');
+
+    // Fetch schema on mount
+    if (schema === 'Loading schema...') {
+        fetch('/api/mcp/schema')
+            .then(res => res.json())
+            .then(data => setSchema(JSON.stringify(data, null, 2)))
+            .catch(err => setSchema('Failed to load schema: ' + err.message));
+    }
+
+    return <CodeCopyBlock code={schema} language="json" className="h-[400px]" />;
+}
+
