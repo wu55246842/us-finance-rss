@@ -309,10 +309,13 @@ export async function generateNextTurn() {
     }
 
     // 5) 事件触发抢话权：覆盖 round-robin
+    const lastSpeaker = recentMessages.length > 0 ? recentMessages[0].agentName : undefined;
+
     const eventPick = chooseSpeakerByEvents({
         prevContext: threadMeta.lastContext,
         curContext: cited,
         agentState: threadMeta.agentState,
+        lastSpeaker,
     });
 
     const nextAgent = pickNextAgentWithOverride(recentMessages, eventPick.forcedAgentName);
@@ -592,6 +595,7 @@ function chooseSpeakerByEvents(params: {
     prevContext?: ThreadMeta['lastContext'];
     curContext: ThreadMeta['lastContext'];
     agentState?: ThreadMeta['agentState'];
+    lastSpeaker?: string;
 }): { forcedAgentName?: string; reason?: string } {
     const prev = params.prevContext || {};
     const cur = params.curContext || {};
@@ -622,7 +626,10 @@ function chooseSpeakerByEvents(params: {
 
     // 3) SPX 大幅波动 或 新闻变化：Analyst 抢话
     if (Math.abs(spxPctDelta) >= 0.5 || newsChanged) {
-        return { forcedAgentName: 'Xypheris', reason: `SPX move (${spxPctDelta.toFixed(2)}%) or news changed` };
+        // 防止同一个人连续抢话 (Anti-Domination)
+        if (params.lastSpeaker !== 'Xypheris') {
+            return { forcedAgentName: 'Xypheris', reason: `SPX move (${spxPctDelta.toFixed(2)}%) or news changed` };
+        }
     }
 
     // 4) 关键位穿越：Analyst 抢话（利用 agentState 中保存的 keyLevels）
