@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { startTradingAnalysis } from "@/lib/actions/trading-agents";
 import { getPriceHistory, getMarketNews } from "@/lib/api/market";
+import { getLiveNews } from "@/lib/api/wscn";
 import { db } from "@/lib/db";
 import { discussionMessages, discussionThreads } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";

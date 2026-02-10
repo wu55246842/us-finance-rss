@@ -122,6 +122,34 @@ export async function generateText(prompt: string, systemPrompt: string, model: 
     return "Error generating analysis. All providers failed. Please try again later.";
 }
 
+export async function generateJson<T>(
+    prompt: string,
+    systemPrompt: string,
+    model: string = 'openai'
+): Promise<T | null> {
+    const raw = await generateText(
+        prompt,
+        systemPrompt + '\nReturn ONLY valid JSON. No markdown. No extra text.',
+        model
+    );
+
+    const cleaned = raw.replace(/```json\s*|\s*```/g, '').trim();
+    try {
+        return JSON.parse(cleaned) as T;
+    } catch {
+        // 二次兜底：从文本中截取第一个 JSON 对象
+        const first = cleaned.indexOf('{');
+        const last = cleaned.lastIndexOf('}');
+        if (first >= 0 && last > first) {
+            try {
+                return JSON.parse(cleaned.slice(first, last + 1)) as T;
+            } catch { }
+        }
+        return null;
+    }
+}
+
+
 export async function runAgentAnalysis(role: AgentRole, data: string): Promise<AgentResponse> {
     const systemPrompt = AGENT_PROMPTS[role];
     const content = await generateText(data, systemPrompt);

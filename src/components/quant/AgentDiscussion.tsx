@@ -1,12 +1,19 @@
-'use client';
-
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, TrendingUp, TrendingDown, BarChart2, Radio } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, BarChart2, Radio, History, Languages } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface Message {
-    id?: number;
+    id: number;
     agentName: string;
     agentRole: 'bull' | 'bear' | 'analyst';
     content: string;
@@ -20,6 +27,13 @@ interface Thread {
     createdAt: string;
 }
 
+const LANGUAGES = [
+    { code: 'en', name: 'English' },
+    { code: 'zh', name: '简体中文' },
+    { code: 'ja', name: '日本語' },
+    { code: 'ko', name: '한국어' },
+];
+
 export function AgentDiscussion() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [displayedMessages, setDisplayedMessages] = useState<Message[]>([]);
@@ -29,6 +43,13 @@ export function AgentDiscussion() {
     const [currentTyping, setCurrentTyping] = useState<string | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
 
+    // Features State
+    const [language, setLanguage] = useState('en');
+    const [translations, setTranslations] = useState<Record<string, string>>({});
+    const [historyOpen, setHistoryOpen] = useState(false);
+    const [historyThreads, setHistoryThreads] = useState<Thread[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+
     // Fetch Latest Data
     const fetchLatest = async (isBackground = false) => {
         if (!isBackground) setLoading(true);
@@ -36,6 +57,12 @@ export function AgentDiscussion() {
 
         try {
             // 1. Try to generate a new turn if needed (throttled backend)
+            // Only trigger generation if we are on the LATEST thread (no specific thread loaded from history)
+            // checks if we are viewing history by comparing dates effectively, but simpler:
+            // if we just loaded a specific thread from history, we might want to pause auto-updates or just let them happen 
+            // but only if that thread IS the today's thread.
+            // For now, simple logic: only trigger generation if we haven't manually loaded a past thread?
+            // Actually, let's just trigger it. The backend handles finding "today's" thread.
             await fetch('/api/quant/discussion', { method: 'POST' });
 
             // 2. Fetch the updated conversation
@@ -43,19 +70,23 @@ export function AgentDiscussion() {
             if (res.ok) {
                 const data = await res.json();
                 if (data.thread) {
-                    setThread(data.thread);
+                    // Only update if we are NOT viewing an old history thread different from today's
+                    // But we don't track "viewing history" state explicitly yet other than `thread` state.
+                    // If current `thread` state id is different from `data.thread.id`, we might be viewing history.
+                    // Let's assume if user opened history, they selected a thread.
 
-                    // Only update if we have new messages
-                    setMessages(prev => {
-                        if (data.messages.length > prev.length) {
-                            return data.messages;
+                    const isSameThread = thread ? thread.id === data.thread.id : true;
+                    if (isSameThread) {
+                        setThread(data.thread);
+                        setMessages(prev => {
+                            if (data.messages.length > prev.length) {
+                                return data.messages;
+                            }
+                            return prev;
+                        });
+                        if (!isBackground && displayedMessages.length === 0) {
+                            setDisplayedMessages(data.messages);
                         }
-                        return prev;
-                    });
-
-                    // If it's the first load, show everything immediately
-                    if (!isBackground && displayedMessages.length === 0) {
-                        setDisplayedMessages(data.messages);
                     }
                 }
             }
@@ -67,44 +98,116 @@ export function AgentDiscussion() {
         }
     };
 
+    // Load History Threads
+    const loadHistory = async () => {
+        setLoadingHistory(true);
+        try {
+            const res = await fetch('/api/quant/history');
+            if (res.ok) {
+                const data = await res.json();
+                setHistoryThreads(data);
+            }
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+
+    // Load Specific Thread
+    const selectThread = async (t: Thread) => {
+        setHistoryOpen(false);
+        setLoading(true);
+        setDisplayedMessages([]); // Clear current view
+        setMessages([]);
+        try {
+            const res = await fetch(`/api/quant/history?threadId=${t.id}`);
+            if (res.ok) {
+                const msgs = await res.json();
+                setThread(t);
+                setMessages(msgs);
+                setDisplayedMessages(msgs); // Show immediately, no typing effect for history
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Translation Effect
+    useEffect(() => {
+        if (language === 'en') return;
+
+        const translateBatches = async () => {
+            // Find messages that need translation
+            const toTranslate = displayedMessages.filter(m => {
+                const key = `${m.id}-${language}`;
+                return !translations[key];
+            });
+
+            if (toTranslate.length === 0) return;
+
+            // Translate one by one for now (could be batched)
+            for (const msg of toTranslate) {
+                const key = `${msg.id}-${language}`;
+                // Set a placeholder to avoid double fetching
+                setTranslations(prev => ({ ...prev, [key]: 'Translating...' }));
+
+                try {
+                    const res = await fetch('/api/quant/translate', {
+                        method: 'POST',
+                        body: JSON.stringify({ text: msg.content, targetLang: language }),
+                    });
+                    const data = await res.json();
+                    if (data.translatedText) {
+                        setTranslations(prev => ({ ...prev, [key]: data.translatedText }));
+                    } else {
+                        setTranslations(prev => ({ ...prev, [key]: msg.content })); // Fallback
+                    }
+                } catch (e) {
+                    setTranslations(prev => ({ ...prev, [key]: msg.content })); // Fallback
+                }
+            }
+        };
+
+        const timeout = setTimeout(translateBatches, 500); // Debounce slightly
+        return () => clearTimeout(timeout);
+    }, [displayedMessages, language, translations]);
+
+
     // Initial Load
     useEffect(() => {
         fetchLatest();
     }, []);
 
-    // Polling every 60s to check for new turns
+    // Polling every 60s
     useEffect(() => {
         const interval = setInterval(() => {
+            // Only poll if we are watching the latest thread? 
+            // Or just poll and let `fetchLatest` decide?
+            // Ideally we check if `thread` is today's thread.
+            // For simplicity, just poll.
             fetchLatest(true);
-        }, 60000); // 1 minute
+        }, 60000);
         return () => clearInterval(interval);
-    }, []);
+    }, [thread]);
 
-    // Auto-scroll to bottom
+    // Auto-scroll
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    }, [displayedMessages, currentTyping]);
+    }, [displayedMessages, currentTyping, language, translations]);
 
-    // Sequential Reveal Effect for NEW messages
+    // Reveal Effect
     useEffect(() => {
         if (messages.length === 0) return;
-
-        // If we simply have more messages than displayed
         if (messages.length > displayedMessages.length) {
             const nextIndex = displayedMessages.length;
             const nextMsg = messages[nextIndex];
-
             setCurrentTyping(nextMsg.agentName);
-
-            // Simulate typing delay
-            const delay = 1500 + Math.random() * 1000;
+            const delay = 1000 + Math.random() * 1000;
             const timeout = setTimeout(() => {
                 setDisplayedMessages(prev => [...prev, nextMsg]);
                 setCurrentTyping(null);
             }, delay);
-
             return () => clearTimeout(timeout);
         }
     }, [messages, displayedMessages]);
@@ -135,11 +238,59 @@ export function AgentDiscussion() {
                     <Radio className={`h-4 w-4 ${isUpdating ? 'text-green-500 animate-pulse' : 'text-gray-400'}`} />
                     <CardTitle className="text-lg font-bold">Live Feed</CardTitle>
                 </div>
-                {thread && (
-                    <Badge variant="outline" className="text-xs font-normal">
-                        {new Date().toLocaleDateString()}
-                    </Badge>
-                )}
+                <div className="flex items-center gap-2">
+                    {/* Language Selector */}
+                    <div className="flex items-center border rounded-md px-2 py-1 text-xs bg-background">
+                        <Languages className="h-3 w-3 mr-2 text-muted-foreground" />
+                        <select
+                            value={language}
+                            onChange={(e) => setLanguage(e.target.value)}
+                            className="bg-transparent outline-none cursor-pointer"
+                        >
+                            {LANGUAGES.map(l => (
+                                <option key={l.code} value={l.code}>{l.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* History Button */}
+                    <Dialog open={historyOpen} onOpenChange={(open) => {
+                        setHistoryOpen(open);
+                        if (open) loadHistory();
+                    }}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="h-8 gap-1">
+                                <History className="h-3 w-3" />
+                                History
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className='max-h-[80vh] overflow-y-auto'>
+                            <DialogHeader>
+                                <DialogTitle>Past Discussions</DialogTitle>
+                                <DialogDescription>Review daily recaps and AI debates.</DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-2 mt-4">
+                                {loadingHistory ? (
+                                    <div className="flex justify-center py-4"><Loader2 className="animate-spin h-5 w-5" /></div>
+                                ) : (
+                                    historyThreads.map(t => (
+                                        <div
+                                            key={t.id}
+                                            className={`p-3 rounded-lg border cursor-pointer hover:bg-accent ${thread?.id === t.id ? 'bg-accent border-primary' : ''}`}
+                                            onClick={() => selectThread(t)}
+                                        >
+                                            <div className="font-medium text-sm">{t.topic}</div>
+                                            <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{t.summary}</div>
+                                            <div className="text-[10px] text-muted-foreground mt-2 text-right">
+                                                {new Date(t.createdAt).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                </div>
             </CardHeader>
             <CardContent className="p-0 md:p-6">
                 <div ref={scrollRef} className="space-y-6 max-h-[70vh] overflow-y-auto px-4 py-4 md:px-0">
@@ -168,7 +319,10 @@ export function AgentDiscussion() {
                                     </span>
                                 </div>
                                 <div className={`px-4 py-3 rounded-2xl text-sm border shadow-sm ${getAgentColor(msg.agentRole)}`}>
-                                    {msg.content}
+                                    {language === 'en' ? msg.content : (translations[`${msg.id}-${language}`] || msg.content)}
+                                    {language !== 'en' && !translations[`${msg.id}-${language}`] && (
+                                        <span className="ml-2 inline-block h-1 w-1 bg-current rounded-full animate-bounce" />
+                                    )}
                                 </div>
                             </div>
                         </div>
