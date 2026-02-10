@@ -439,6 +439,26 @@ Return JSON:
         rawModel: clampText(JSON.stringify(traderOut), 600),
     };
 
+    // 11.5) FINAL CHECK: Concurrency / Race Condition
+    // Before inserting, check if a message was just added by another process while we were generating.
+    const [latestMsg] = await db
+        .select()
+        .from(discussionMessages)
+        .where(eq(discussionMessages.threadId, thread.id))
+        .orderBy(desc(discussionMessages.createdAt))
+        .limit(1);
+
+    if (latestMsg) {
+        const lastTime = new Date(latestMsg.createdAt).getTime();
+        const diff = (Date.now() - lastTime) / (1000 * 60);
+        if (diff < 2) { // strict 2-min guard for race conditions
+            return {
+                skipped: true,
+                reason: `Race condition detected. A message was added ${diff.toFixed(1)} mins ago while generating.`,
+            };
+        }
+    }
+
     // 12) Save message
     const [savedMsg] = await db.insert(discussionMessages).values({
         threadId: thread.id,
