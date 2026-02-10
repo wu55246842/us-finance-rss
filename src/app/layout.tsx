@@ -66,12 +66,6 @@ export default function RootLayout({
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'US Markets & Macro Hub',
-    url: 'https://financea.me',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: 'https://financea.me/search?q={search_term_string}',
-      'query-input': 'required name=search_term_string',
-    },
   };
 
   const organizationJsonLd = {

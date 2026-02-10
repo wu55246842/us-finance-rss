@@ -7,6 +7,16 @@ if (process.env.NODE_ENV === 'development') {
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.financea.me' }],
+        destination: 'https://financea.me/:path*',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
